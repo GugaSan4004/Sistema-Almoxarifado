@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <title>Emprestimos</title>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <link rel="stylesheet" href="/static/css/default.css">
+    <link rel="stylesheet" href="/static/css/tools-loan/check-out.css">
+
+    <link rel="manifest" href="/templates/tools-loan/manifest.json">
+
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <script src="{{ url_for('static', filename='js/tools-loan/check-out.js') }}"></script>
+    <script src="/static/js/tools-loan/check-out.js" defer></script>
+
+    <link rel="icon" href="/static/imgs/logo/nerd-tools.png" type="image/png+xml">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <header>
+        Sistema de Empréstimos
+    </header>
+
+    <main>
+        <h1 id="message-box">
+            Escaneie o codigo ou digite o nome da ferramenta.
+        </h1>
+    
+        <input type="text" id="code-input" placeholder="Digite ou Escaneie">
+    </main>
+</body>
+</html>

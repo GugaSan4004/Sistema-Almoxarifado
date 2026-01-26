@@ -1,0 +1,196 @@
+body {
+    background-image: linear-gradient(to right top, #07152a, #051f40, #022957, #02326f, #0a3c87);
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    justify-content: center;
+
+    color: #fff;
+    font-weight: bold;
+    margin-top: 3vh;
+    margin-bottom: 2vh;
+    font-size: 2.4em;
+}
+
+main {
+    display: flex;
+    flex-wrap: wrap;
+    height: 90vh;
+    
+    column-gap: 11px;
+    row-gap: 11px;
+    justify-content: center;
+    align-items: center;
+}
+
+main:has(.tool-container:nth-child(6)) .tool-container {
+    flex: 0 1 calc(18%);
+}
+
+.tool-container {
+    flex: 0 1 calc(20% - 11px);
+    
+    display: grid;
+    background-color: #fff;
+        
+    font-weight: bold;
+    font-size: 18px;
+
+    border: 1px solid rgba(145, 145, 145, 0.26);
+    border-radius: 8px;
+    padding: 1vh;
+    box-shadow: 4px 4px 7px rgba(255, 255, 255, 0.678);
+    justify-items: center;
+    
+    animation: fadeCardIn 0.5s ease forwards;
+    position: relative;
+    
+}
+
+.tool-container *{
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.tool-container h1 {
+    margin-top: 6px;
+    color: #000;
+}
+
+.number{
+    position: absolute;
+    font-size: 16px;
+    top: 6px;
+    left: 6px;
+    display: flex;
+    gap: 4px;
+}
+
+.mac-traffic {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    display: flex;
+    gap: 3px;
+
+}
+
+.mac-traffic span {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+
+    cursor: pointer;
+
+    border: 2px solid rgba(82, 82, 82, 0.404);
+    border-radius: 3em;
+}
+
+.mac-traffic span:hover {
+    transform: scale(1.1);
+}
+
+.mac-traffic .red {
+    background: #ff5f57;
+}
+
+.mac-traffic .yellow {
+    background: #ffbd2e;
+}
+
+.mac-traffic .green {
+    background: #28c840;
+}
+
+.svg {
+    height: 10vh;
+    background-color: #00000000;
+    padding: 8px;
+
+    border: 3px solid rgba(1, 0, 37, 0.199);
+    border-radius: 1em;
+    margin-top: 12px;
+}
+
+.picture {
+    height: 20vh;
+    width: 30vh;
+
+    color: #000;
+    
+    border-radius: 10px;
+
+    border: 4px solid rgb(66, 66, 66);
+    margin-top: 12px;
+    object-fit: cover;
+
+    align-content: center;
+}
+
+.fade-out {
+    animation: fadeCardOut 0.5s ease forwards;
+}
+
+.missing {
+    box-shadow: 7px 8px rgb(255, 0, 0);
+}
+
+@keyframes fadeCardIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeCardOut {
+    from { opacity: 1; transform: translateY(0); }
+    to { opacity: 0; transform: translateY(12px); }
+}
+/* 
+.nenhum-registro {
+    color: #fff;
+    font-size: 1.8em;
+    font-weight: bold;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    height: 80vh;
+}
+
+/* Quando tem 6 cards ou mais → reduz para caber 5 por linha 
+
+
+
+.svg {
+    height: 10vh;
+    background-color: #00000000;
+    padding: 8px;
+
+    border: 3px solid rgba(1, 0, 37, 0.199);
+    border-radius: 1em;
+    margin-top: 12px;
+}
+
+.ferramenta-container {
+    display: grid;
+    background-color: #fff;
+        
+    font-weight: bold;
+    color: #1b1b1b;
+    font-size: 18px;
+
+    border: 1px solid rgba(145, 145, 145, 0.26);
+    border-radius: 8px;
+    padding: 1vh;
+    box-shadow: 4px 4px 7px rgba(255, 255, 255, 0.678);
+    justify-items: center;
+    
+    animation: fadeCardIn 0.5s ease forwards;
+    position: relative;
+}

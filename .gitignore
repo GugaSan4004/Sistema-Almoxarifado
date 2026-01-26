@@ -1,0 +1,11 @@
+pictures/
+api-key/
+__pycache__/*
+__pycache__*
+*.pyc
+*.pyo
+*.sqlite
+*/__pycache__/*
+.vscode
+.vscode/*
+*.exe

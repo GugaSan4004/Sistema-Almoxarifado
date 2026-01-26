@@ -1,0 +1,14 @@
+{
+  "name": "tools-loan",
+  "short_name": "Tools",
+  "start_url": "/tools-loan/",
+  "scope": "/tools-loan/",
+  "display": "standalone",
+  "icons": [
+    {
+      "src": "/tools-loan/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}

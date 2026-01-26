@@ -1,0 +1,14 @@
+{
+  "name": "Mails",
+  "short_name": "Mails",
+  "start_url": "/mails/",
+  "scope": "/mails/",
+  "display": "standalone",
+  "icons": [
+    {
+      "src": "/static/imgs/logo/Nerd-Mails.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}
