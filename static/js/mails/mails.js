@@ -118,6 +118,7 @@ function getCorrespondences(filter, orderBy, btn) {
                 Object.entries(data[1]).forEach((correpondence, index, array) => {
                     if (index !== 6 && index !== 7 && index !== 8 && index !== 9) {
                         const [y, m, d] = data[1][10].split("-").map(Number);
+
                         const delayed = ((new Date().setHours(0, 0, 0, 0) - new Date(y, m - 1, d).setHours(0, 0, 0, 0)) / (1000 * 60 * 60 * 24));
 
                         if (index === array.length - 1) {
@@ -288,9 +289,17 @@ function getCorrespondences(filter, orderBy, btn) {
                                 field.textContent = `${String(d).padStart(2, "0") + "-" + String(m).padStart(2, "0") + "-" + y}`;
                             } else {
                                 field.title = !data[1][13] && data[1][9] == "returned" ? "Documento de devolução Emitido" : dictionary[data[1][9]]
-                                field.textContent = correpondence[1];
+                                if (index == 12) {
+                                    if (data[1][12]) {
+                                        const [y12, m12, d12] = data[1][12].split("-").map(Number)
+                                        field.textContent = `${String(d12).padStart(2, "0") + "-" + String(m12).padStart(2, "0") + "-" + y12}`;
+                                    } else {
+                                        field.textContent = null
+                                    }
+                                } else {
+                                    field.textContent = correpondence[1];
+                                }
                             }
-
                             content_container.appendChild(field);
                         }
                     }
@@ -671,7 +680,7 @@ function updateReceiver() {
                     return items;
                 }
 
-                const [day, month, year] = data_input.value.split("-");
+                const [year, month, day] = data_input.value.split("-");
 
                 let payload
 

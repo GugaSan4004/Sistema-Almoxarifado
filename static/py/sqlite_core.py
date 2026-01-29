@@ -208,7 +208,13 @@ class init:
                 "shipped": shipped,
                 "delayed": delayed
             }
+    
+    class users:
+        def __init__(self, parent: "init") -> None:
+            self.connection = parent.conector
         
+        
+                
     class tools:
         def __init__(self, parent: "init") -> None:
             self.connection = parent.conector

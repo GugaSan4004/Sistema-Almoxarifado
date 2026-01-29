@@ -32,6 +32,8 @@ from flask import Flask, abort, request, jsonify, render_template, send_from_dir
 #             Modules              #
 # ################################ # 
 
+
+
 FOLDER = r"\\192.168.7.252\dados\OPERACOES\13-ALMOXARIFADO\0 - Sistema Almox"
 
 sqlite = sqlite_core.init(FOLDER)
@@ -100,12 +102,14 @@ def firewall():
 
     if len(data) > 10_000_000:
         abort(413)
-
-    if request.remote_addr not in ["192.168.7.20", "127.0.0.1", "192.168.7.58", "192.168.7.119"]:
-        abort(403) 
+        
+    if request.remote_addr not in ["192.168.7.20", "127.0.0.1", "192.168.7.58", "192.168.7.119", "192.168.7.2"]:
+        abort(403)
 
 @app.route("/")
 def fallback():
+    if "mobile" in str(request.headers.get("User-Agent")).lower():
+        return render_template("mails/mails_mobile.html")
     return render_template("mails/mails.html")
 
 @app.route("/tools-loan/list")
@@ -119,7 +123,7 @@ def tools_list():
             result.append([r[2], r[3]])
             
     return [{"nome": d[0], "status": d[1]} for d in result]
-    
+
 @app.route("/tools-loan/")
 @app.route("/tools-loan/<subpath>")
 def tool_loans(subpath = None):

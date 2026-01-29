@@ -40,8 +40,6 @@ button:active {
     color: var(--color--active);
 }
 
-
-
 main {
     display: grid;
     height: 88vh;
@@ -314,11 +312,6 @@ select {
 .loading {
     position: relative;
     overflow: hidden;
-}
-
-.loading img {
-    display: block;
-    filter: brightness(0.4);
 }
 
 .loading::after {
