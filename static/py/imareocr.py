@@ -61,23 +61,24 @@ class init:
                     text += " " + line.text
                     lines.append(line.text)
         
-        
-        names = []
-        
         def chunk_list(lst, size=5):
             for i in range(0, len(lst), size):
                 yield lst[i:i + size]
         
+        names = []
+
         for batch in chunk_list(lines, 5):
+            lt = " ".join(batch)
+                        
             response = self.textClient.recognize_entities(
-                documents=batch,
+                documents=[lt],
                 language="pt"
             )
             
             for doc in response:
                 for ent in doc.entities:
                     # ent.category == "PersonType" or
-                    if (ent.category == "Person") and ent.confidence_score >= 0.70:
+                    if (ent.category == "Person") and ent.confidence_score >= 0.65:
                         names.append(ent.text)
                                 
         return [text, names]
