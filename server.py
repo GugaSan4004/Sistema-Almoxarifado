@@ -1,4 +1,3 @@
-
 import re
 import os
 import sys
@@ -42,7 +41,7 @@ tools_db = sqlite_core.init.tools(sqlite)
 mails_db = sqlite_core.init.mails(sqlite)
 
 imgReader = imareocr.init()
-returngen = return_generator.init(FOLDER)
+returnGen = return_generator.init(FOLDER)
 
 app = Flask(__name__)
 
@@ -159,15 +158,15 @@ def picture(filename):
 def add_tool():
     data = request.json
     
-    if data == None:
+    if not data:
         sqlite.log_edit(
             route="/tools-loan/add-tool",
             method="[POST]",
-            id=None,
+            value_id=None,
             code=400,
             message="Invalid Code",
             fields_changed=None,
-            values=data,
+            list_values=data,
             ip=request.remote_addr
         )
         return jsonify({
@@ -178,23 +177,20 @@ def add_tool():
         sqlite.log_edit(
             route="/tools-loan/add-tool",
             method="[POST]",
-            id=None,
+            value_id=None,
             code=404,
             message="Code not found",
             fields_changed=None,
-            values=data,
+            list_values=data,
             ip=request.remote_addr
         )
         return jsonify({
             "Message": "Error: Código não encontrado!"
         }, 404)
-    
-    if item[3].lower() == "disponivel":
-        type = "saida"
-        status = "Emprestado"
-    elif item[3].lower() == "emprestado":
-        type = "entrada"
-        status = "Disponivel"
+
+    movement_type = "saida" if item[3].lower() == "disponivel" else "entrada"
+
+    status = "Emprestado" if item[3].lower() == "disponivel" else "Disponivel"
     
     movements_count = tools_db.getMovementsCount()
     
@@ -210,7 +206,7 @@ def add_tool():
             photo["month"], 
             photo["year"], 
             photo["time"], 
-            type
+            movement_type
         )
         
         tools_db.updateTools(item[0], "id_movements", movement[0])
@@ -218,11 +214,11 @@ def add_tool():
         sqlite.log_edit(
             route="/tools-loan/add-tool",
             method="[POST]",
-            id=item[0],
+            value_id=item[0],
             code=500,
             message=e,
             fields_changed=None,
-            values=data,
+            list_values=data,
             ip=request.remote_addr
         )
         
@@ -233,11 +229,11 @@ def add_tool():
         sqlite.log_edit(
             route="/tools-loan/add-tool",
             method="[POST]",
-            id=item[0],
+            value_id=item[0],
             code=200,
             message="OK",
             fields_changed='{"tools": "status", "tools_movements": "new", "tools": "id_movements"}',
-            values='{"status": "' + status + '", "new": "' + str(movement[0]) + '", "id_movements": "' + str(movement[0]) + '"}',
+            list_values='{"status": "' + status + '", "new": "' + str(movement[0]) + '", "id_movements": "' + str(movement[0]) + '"}',
             ip=request.remote_addr
         )
         
@@ -266,11 +262,11 @@ def missing():
         sqlite.log_edit(
             route="/tools-loan/registers/missing",
             method="[POST]",
-            id=None,
+            value_id=None,
             code=200,
             message="OK",
             fields_changed='{"tools": "id_movements"}',
-            values='{"id_movements": "NULL"}',
+            list_values='{"id_movements": "NULL"}',
             ip=request.remote_addr
         )
         return jsonify({
@@ -280,11 +276,11 @@ def missing():
         sqlite.log_edit(
             route="/tools-loan/registers/missing",
             method="[POST]",
-            id=None,
+            value_id=None,
             code=400,
             message="Invalid Values",
             fields_changed=None,
-            values=None,
+            list_values=None,
             ip=request.remote_addr
         )
         return jsonify({
@@ -300,11 +296,11 @@ def casualty():
         sqlite.log_edit(
             route="/tools-loan/registers/casualty",
             method="[POST]",
-            id=None,
+            value_id=None,
             code=200,
             message="OK",
             fields_changed='{"tools": "id_movements"}',
-            values='{"id_movements": "NULL"}',
+            list_values='{"id_movements": "NULL"}',
             ip=request.remote_addr
         )
         return jsonify({
@@ -314,11 +310,11 @@ def casualty():
         sqlite.log_edit(
             route="/tools-loan/registers/casualty",
             method="[POST]",
-            id=None,
+            value_id=None,
             code=400,
             message="Invalid Values",
             fields_changed=None,
-            values=None,
+            list_values=None,
             ip=request.remote_addr
         )
         return jsonify({
@@ -350,11 +346,11 @@ def upload_file():
             sqlite.log_edit(
                 route="/mails/upload_file",
                 method="[POST]",
-                id=None,
+                value_id=None,
                 code=400,
                 message="Invalid Values",
                 fields_changed=None,
-                values=None,
+                list_values=None,
                 ip=request.remote_addr
             )
             return jsonify({
@@ -369,17 +365,18 @@ def upload_file():
         
         try:
             Image.open(file.stream).verify()
-        except Exception as e:
+        except:
             sqlite.log_edit(
                 route="/mails/upload_file",
                 method="[POST]",
-                id=None,
+                value_id=None,
                 code=400,
                 message="Invalid Values",
                 fields_changed=None,
-                values=None,
+                list_values=None,
                 ip=request.remote_addr
             )
+
             return jsonify({
                 "Message": "Error: Tipo de arquivo invalido!"
             }, 400)
@@ -392,11 +389,11 @@ def upload_file():
         sqlite.log_edit(
             route="/mails/upload_file",
             method="[POST]",
-            id=None,
+            value_id=None,
             code=200,
             message="OK",
             fields_changed='{"global": "lastImage"}',
-            values='{"lastImage": "' + lastImage + '", "extract": "' + str(extract) + '"}',
+            list_values='{"lastImage": "' + lastImage + '", "extract": "' + str(extract) + '"}',
             ip=request.remote_addr
         )
         
@@ -407,11 +404,11 @@ def upload_file():
         sqlite.log_edit(
             route="/mails/upload_file",
             method="[POST]",
-            id=None,
+            value_id=None,
             code=500,
             message=e,
             fields_changed=None,
-            values=None,
+            list_values=None,
             ip=request.remote_addr
         )
         return jsonify(":("), 500
@@ -427,11 +424,11 @@ def update():
         sqlite.log_edit(
             route="/mails/update",
             method="[POST]",
-            id=None,
+            value_id=None,
             code=400,
             message="Invalid date Value",
             fields_changed=None,
-            values=None,
+            list_values=None,
             ip=request.remote_addr
         )
         
@@ -446,11 +443,11 @@ def update():
             sqlite.log_edit(
                 route="/mails/update",
                 method="[POST]",
-                id=None,
+                value_id=None,
                 code=400,
                 message="Invalid Values",
                 fields_changed=None,
-                values=None,
+                list_values=None,
                 ip=request.remote_addr
             )
             return jsonify({
@@ -473,7 +470,7 @@ def update():
             
             infos = infos[0]
             
-            if infos[13] != None:
+            if infos[13]:
                 return jsonify({
                     "Message": "Correspondencia já devolvida detectada!"
                 }, 400)
@@ -501,15 +498,15 @@ def update():
             sqlite.log_edit(
                 route="/mails/update",
                 method="[POST]",
-                id=item.get("code"),
+                value_id=item.get("code"),
                 code=200,
                 message="OK",
                 fields_changed='{"mails": ["receive_name", "receive_date", "photo_id", "status"]}',
-                values='{"receive_name": "' + motivo + '", "receive_date": "' + date + '", "photo_id": "' + pname + '", "status": "' + code + '"}',
+                list_values='{"receive_name": "' + motivo + '", "receive_date": "' + date + '", "photo_id": "' + pname + '", "status": "' + code + '"}',
                 ip=request.remote_addr
             )
         
-        if(os.path.exists(lastImage)):
+        if os.path.exists(lastImage):
             os.remove(lastImage)
 
         return jsonify({
@@ -524,11 +521,11 @@ def update():
         sqlite.log_edit(
             route="/mails/update",
             method="[POST]",
-            id=None,
+            value_id=None,
             code=400,
             message="Invalid Values",
             fields_changed=None,
-            values=None,
+            list_values=None,
             ip=request.remote_addr
         )
         
@@ -542,11 +539,11 @@ def update():
         sqlite.log_edit(
             route="/mails/update",
             method="[POST]",
-            id=None,
+            value_id=None,
             code=404,
             message="Mail not found",
             fields_changed=None,
-            values=None,
+            list_values=None,
             ip=request.remote_addr
         )
         
@@ -558,11 +555,11 @@ def update():
         sqlite.log_edit(
             route="/mails/update",
             method="[POST]",
-            id=None,
+            value_id=None,
             code=409,
             message="Mail already shipped",
             fields_changed=None,
-            values=None,
+            list_values=None,
             ip=request.remote_addr
         )
         
@@ -587,11 +584,11 @@ def update():
     sqlite.log_edit(
         route="/mails/update",
         method="[POST]",
-        id=code,
+        value_id=code,
         code=200,
         message="OK",
         fields_changed='{"mails": ["receive_name", "receive_date", "photo_id", "status"]}',
-        values='{"receive_name": "' + user + '", "receive_date": "' + date + '", "photo_id": "' + pname + '", "status": "' + code + '"}',
+        list_values='{"receive_name": "' + user + '", "receive_date": "' + date + '", "photo_id": "' + pname + '", "status": "' + code + '"}',
         ip=request.remote_addr
     )
     
@@ -612,15 +609,15 @@ def register():
     priority = data["priority"]
     
     if re.match(r'^[A-Za-z]{2}\d{9}BR$', str(code).upper()):
-        if ("unique constraint failed" in str(mails_db.register(str(name), str(code), str(fantasy), str(type_), str(priority), str(status))).lower()):
+        if "unique constraint failed" in str(mails_db.register(str(name), str(code), str(fantasy), str(type_), str(priority), str(status))).lower():
             sqlite.log_edit(
                 route="/mails/register",
                 method="[POST]",
-                id=code,
+                value_id=code,
                 code=409,
                 message="unique constraint failed",
                 fields_changed=None,
-                values=None,
+                list_values=None,
                 ip=request.remote_addr
             )
 
@@ -631,11 +628,11 @@ def register():
             sqlite.log_edit(
                 route="/mails/register",
                 method="[POST]",
-                id=code,
+                value_id=code,
                 code=200,
                 message="OK",
                 fields_changed='{"mails": ["name", "code", "fantasy", "type", "priority", "status"]}',
-                values=(
+                list_values=(
                     '{"name": "' + str(name) +
                     '", "code": "' + str(code) +
                     '", "fantasy": "' + str(fantasy) +
@@ -654,11 +651,11 @@ def register():
         sqlite.log_edit(
             route="/mails/register",
             method="[POST]",
-            id=code,
+            value_id=code,
             code=400,
             message="Invalid Values",
             fields_changed=None,
-            values=None,
+            list_values=None,
             ip=request.remote_addr
         )
         
@@ -678,17 +675,17 @@ def reception_received():
         filteredMails = mails_db.getMails(str(code), 'id', "ASC")
         if filteredMails:
             filteredMails = filteredMails[0]
-            if (filteredMails[6] == None or filteredMails[7] == None):
+            if not filteredMails[6] or not filteredMails[7]:
                 mails_db.updateReceiver(str(code), str(receiver), str(sender))
 
                 sqlite.log_edit(
                     route="/mails/update-reception-received",
                     method="[POST]",
-                    id=code,
+                    value_id=code,
                     code=200,
                     message="OK",
                     fields_changed='{"mails": ["ReceivedOnReceptionBy", "SendedOnReceptionBy", "LeaveReceptionAt", "status"]}',
-                    values=(
+                    list_values=(
                         '{"ReceivedOnReceptionBy": "' + str(receiver) +
                         '", "SendedOnReceptionBy": "' + str(sender) +
                         '", "LeaveReceptionAt": "' + datetime.datetime.now().strftime("%d-%m-%Y %H:%M") +
@@ -704,11 +701,11 @@ def reception_received():
                 sqlite.log_edit(
                     route="/mails/update-reception-received",
                     method="[POST]",
-                    id=code,
+                    value_id=code,
                     code=409,
                     message="mail already shipped",
                     fields_changed=None,
-                    values=None,
+                    list_values=None,
                     ip=request.remote_addr
                 )
                 
@@ -720,11 +717,11 @@ def reception_received():
             sqlite.log_edit(
                 route="/mails/update-reception-received",
                 method="[POST]",
-                id=code,
+                value_id=code,
                 code=404,
                 message="mail not found",
                 fields_changed=None,
-                values=None,
+                list_values=None,
                 ip=request.remote_addr
             )
             
@@ -735,11 +732,11 @@ def reception_received():
         sqlite.log_edit(
             route="/mails/update-reception-received",
             method="[POST]",
-            id=code,
+            value_id=code,
             code=422,
             message="Invalid code format",
             fields_changed=None,
-            values=None,
+            list_values=None,
             ip=request.remote_addr
         )
         
@@ -764,11 +761,11 @@ def update_column():
         sqlite.log_edit(
             route="/mails/update-column",
             method="[POST]",
-            id=code,
+            value_id=code,
             code=500,
             message=e,
             fields_changed=None,
-            values=None,
+            list_values=None,
             ip=request.remote_addr
         )
         return jsonify({
@@ -778,11 +775,11 @@ def update_column():
         sqlite.log_edit(
             route="/mails/update-column",
             method="[POST]",
-            id=code,
+            value_id=code,
             code=200,
             message="OK",
             fields_changed='{"mails", "' + column +'"}',
-            values='{"' + column + '", "' + old_value + ' -> ' + new_value + '",}',
+            list_values='{"' + column + '", "' + old_value + ' -> ' + new_value + '",}',
             ip=request.remote_addr
         )
         
@@ -794,7 +791,7 @@ def update_column():
 def generate_return():
     data = request.get_json()
 
-    file_path = returngen.generate_return(
+    file_path = returnGen.generate_return(
         data=data
     )
     
@@ -810,6 +807,7 @@ def generate_return():
     }, 200)
 
 
+
 # ################################ #
 #             SocketIO             #
 #              Repass              #
@@ -823,9 +821,7 @@ def update_pictures():
 
 
 
-
 if __name__ == "__main__":
-    
     Socket.run(
         app,
         host="0.0.0.0",

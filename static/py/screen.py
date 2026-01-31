@@ -1,10 +1,8 @@
 import time
 import queue
 import ctypes
-import psutil
 import pyautogui
 import threading
-import webbrowser
 
 class LASTINPUTINFO(ctypes.Structure):
     _fields_ = [

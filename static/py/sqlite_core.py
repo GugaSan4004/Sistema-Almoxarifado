@@ -7,27 +7,27 @@ from datetime import datetime, date
 
 class init:
     def __init__(self, folder) -> None:
-        self.conector = sqlite3.connect(folder + r"\almoxarifado.sqlite", check_same_thread=False)
+        self.connector = sqlite3.connect(folder + r"\almoxarifado.sqlite", check_same_thread=False)
     
-    def log_edit(self, route, method, id, code, message, fields_changed, values, ip):
-        cur = self.conector.cursor()
+    def log_edit(self, route, method, value_id, code, message, fields_changed, list_values, ip):
+        cur = self.connector.cursor()
         cur.execute("""
             INSERT INTO edit_logs
             (route, method, value_id, code, message, fields_changed, list_values, ip)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        """, (str(route), str(method), str(id), str(code), str(message), str(fields_changed), str(values), str(ip))
+        """, (str(route), str(method), str(value_id), str(code), str(message), str(fields_changed), str(list_values), str(ip))
         )
-        self.conector.commit()
+        self.connector.commit()
         cur.close()
 
     class mails:
         def __init__(self, parent: "init") -> None:
-            self.connection = parent.conector
+            self.connection = parent.connector
             self.connection: sqlite3.Connection = self.connection
             
         def updatePicture(self, receive_name, receive_date, photo_id, code, status):
+            cur = self.connection.cursor()
             try:
-                cur = self.connection.cursor()
                 cur.execute(
                     "UPDATE mails SET receive_name = ?, receive_date = ?, photo_id = ?, status = ? WHERE code = ?",
                     (receive_name.title(), receive_date, photo_id, status, code.upper())
@@ -76,7 +76,6 @@ class init:
                 text = text.lower()
                 text = unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode("ascii")
 
-                # remove termos jurídicos comuns
                 text = re.sub(r'\b(ltda|sa|s\/a|me|eireli|comercio|de|alimentos)\b', '', text)
 
                 text = re.sub(r'[^a-z0-9 ]', '', text)
@@ -131,12 +130,15 @@ class init:
                 self.connection.commit()
             except Exception as e:
                 return e
+
             cur.close()
+            return None
+
         
-        def getMails(self, filter, orderBy, orderDirection):
+        def getMails(self, mail_filter, orderBy, orderDirection):
             cur = self.connection.cursor()
         
-            if filter:   
+            if mail_filter:
                 # if orderBy == self.temp_orderBy:
                 #     self.direction_orderBy = "DESC" if self.direction_orderBy == "ASC" else "ASC"
                 # else:
@@ -145,14 +147,14 @@ class init:
                 cur.execute(
                     f"SELECT * FROM mails WHERE code LIKE ? OR name LIKE ? OR fantasy LIKE ? OR photo_id LIKE ? OR receive_name LIKE ? OR status = ? OR type LIKE ? OR priority LIKE ? ORDER BY {orderBy} {orderDirection}",
                     (
-                        "%" + filter + "%", 
-                        "%" + filter + "%", 
-                        "%" + filter + "%",
-                        "%" + filter + "%",
-                        "%" + filter + "%",
-                        filter,
-                        "%" + filter.title() + "%",
-                        "%" + filter.title() + "%"
+                        "%" + mail_filter + "%",
+                        "%" + mail_filter + "%",
+                        "%" + mail_filter + "%",
+                        "%" + mail_filter + "%",
+                        "%" + mail_filter + "%",
+                        mail_filter,
+                        "%" + mail_filter.title() + "%",
+                        "%" + mail_filter.title() + "%"
                     )
                 )
                 correspondences = cur.fetchmany(200)
@@ -211,13 +213,13 @@ class init:
     
     class users:
         def __init__(self, parent: "init") -> None:
-            self.connection = parent.conector
+            self.connection = parent.connector
         
         
                 
     class tools:
         def __init__(self, parent: "init") -> None:
-            self.connection = parent.conector
+            self.connection = parent.connector
         
         def getTools(self):
             try:
@@ -277,19 +279,19 @@ class init:
             cur.close()
             return result
         
-        def updateTools(self, id, column, value) -> None:
+        def updateTools(self, tool_id, column, value) -> None:
             cur = self.connection.cursor()
             
-            cur.execute(f"UPDATE tools SET {column} = ? WHERE id = ?", (value, id))
+            cur.execute(f"UPDATE tools SET {column} = ? WHERE id = ?", (value, tool_id))
             self.connection.commit()
             
             cur.close()
         
-        def addMovement(self, id, item, day, month, year, time, type):
+        def addMovement(self, tool_id, item, day, month, year, time, movement_type):
             cur = self.connection.cursor()
             
-            cur.execute("INSERT INTO tools_movements (id, item, day, month, year, time, type) VALUES (?, ?, ?, ?, ?, ?, ?)", (str(id).zfill(6), item, day, month, year, time, type))
-            cur.execute("SELECT * FROM tools_movements WHERE id = ?", (str(id).zfill(6),))
+            cur.execute("INSERT INTO tools_movements (id, item, day, month, year, time, type) VALUES (?, ?, ?, ?, ?, ?, ?)", (str(id).zfill(6), item, day, month, year, time, movement_type))
+            cur.execute("SELECT * FROM tools_movements WHERE id = ?", (str(tool_id).zfill(6),))
             result = cur.fetchone()
             
             self.connection.commit()
