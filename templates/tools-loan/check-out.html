@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emprestimos</title>
+
+    <link rel="manifest" href="/templates/tools-loan/manifest.json">
+    <link rel="icon" href="/static/imgs/logo/nerd-tools.png" type="image/png+xml">
+
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <script src="/static/js/tools-loan/check-out.js" defer></script>
+    <script src="{{ url_for('static', filename='js/tools-loan/check-out.js') }}"></script>
+    
+    <!-- <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script> -->
+    <link href="/static/css/main.css" rel="stylesheet">
+</head>
+
+<body class="h-screen text-white grid grid-rows-12 grid-cols-full bg-default-blue">
+    <header class="row-span-2 col-span-full text-6xl flex items-center justify-center mt-8">
+        Sistema de Empréstimos
+    </header>
+
+    <main class="grid col-span-full row-span-12 grid-cols-46 grid-rows-20">
+        <h1 id="message-box" class="flex col-span-full row-span-4 justify-center items-end text-3xl font-bold">
+            Escaneie o codigo ou digite o nome da ferramenta.
+        </h1>
+
+        <input id="code-input"
+            class="col-span-full row-start-6 col-start-17 col-end-31 text-center border-3 rounded-md text-sm self-center min-h-10"
+            type="text" id="code-input" placeholder="Digite ou Escaneie">
+
+    </main>
+</body>
+
+</html>

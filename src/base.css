@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+@theme {
+    --color-default-blue: #02326f;
+
+    @keyframes slideOut {
+        0% {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        30% {
+            transform: translateX(20vh);
+            opacity: 1;
+        }
+
+        100% {
+            transform: translateX(-200vh);
+            opacity: 1;
+        }
+    }
+
+    @keyframes fadeCardIn {
+        from {
+            opacity: 0;
+            transform: translateY(12px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes fadeCardOut {
+        from {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        to {
+            opacity: 0;
+            transform: translateY(12px);
+        }
+    }
+}
+
+@layer utilities {
+    .animate-slide-out {
+        animation: slideOut 1.4s ease forwards;
+    }
+
+    .animate-fade-in {
+        animation: fadeCardIn 0.5s ease forwards;
+    }
+
+    .animate-fade-out {
+        animation: fadeCardOut 0.5s ease forwards;
+    }
+}

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <title>Correspondencias</title>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="/static/css/default.css">
+    <link rel="stylesheet" href="/static/css/mails/mails.css">
+
+    <link rel="manifest" href="/templates/mails/manifest.json">
+
+    <script src="/static/js/mails/mails.js" defer></script>
+
+    <link rel="icon" href="/static/imgs/logo/Nerd-Mails.png" type="image/png+xml">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <header>
+        <div class="options">
+            <button id="data-base" onclick="focuses('db-container'); getCorrespondences(null, null, 'me')">Registros</button>
+            <button id="shipment" onclick="focuses('ship-container')">Registrar Saida</button>
+        </div>
+        <h1>
+            Sistema de Correspondencias
+        </h1>
+
+    </header>
+
+    <main>
+        <form class="container insert-container" id="insert-container" style="display: none;">
+            <h1 id="insert-message">Preencha os campos abaixo!</h1>
+
+            <input id="ar_code" name="code" type="text" placeholder="Codigo AR" required>
+
+            <input id="mail_name" name="name" type="text" placeholder="Nome que está na correspondencia" required>
+            <input id="mail_fantasy" name="fantasy" type="text" placeholder="Nome fantasia ( caso exista )">
+
+
+            <select id="mail_type" name="type" required>
+                <option value="caixa">Caixa</option>
+                <option value="carta">Carta</option>
+                <option value="pacote">Pacote</option>
+            </select>
+
+            <select id="mail_priority" name="priority" required>
+                <option value="simples">Simples</option>
+                <option value="judicial">Judicial</option>
+            </select>
+
+            <!-- <select id="mail_status" name="status" required>
+                <option value="on_reception">Na recepção</option>
+                <option value="almox">No Almoxarifado</option>
+                <option value="shipped">Entregue</option>
+                <option value="returned">Devolvido</option>
+            </select> -->
+
+            <button class="submit" onclick="register()" type="button" id="submit">Registrar</button>
+        </form>
+
+        <div class="container db-container" id="db-container" style="display: none;">
+            <div id="caption" class="caption">
+                <h2>Resumo</h2>
+                <h1 id="caption_total"></h1>
+                <h1 id="caption_returned"></h1>
+                <h1 id="caption_shipped"></h1>
+                <h1 id="caption_delayed"></h1>
+            </div>
+            <div class="helpers">
+                <input id="search_input" type="search" placeholder="Filtro (id, nome, tipo, Etc)!">
+                <button id="search_button"
+                    onclick="getCorrespondences(document.getElementById('search_input').value)">Buscar</button>
+            </div>
+        </div>
+
+        <div class="container" id="ship-container" style="display: none;">
+            <form class="ship-container ship-almox" id="ship-almox" style="display: none;">
+                <h1 id="reception-insert-message">Preencha os campos abaixo!</h1>
+
+                <input id="mail_code" name="code" type="text" placeholder="Codigo AR" required>
+
+                <select id="receiver_name" name="type" required>
+                    <option value="kayro">Kayro</option>
+                    <option value="guilherme">Guilherme</option>
+                    <option value="gustavo">Gustavo</option>
+                    <option value="other">Outro(a)</option>
+                </select>
+
+                <select id="sender_name" name="type" required>
+                    <option value="yara">Yara</option>
+                    <option value="lidia">Lidia</option>
+                    <option value="Michelle">Michelle</option>
+                    <option value="other">Outro(a)</option>
+                </select>
+
+                <button class="submit" onclick="receivedOnReception()" type="button"
+                    id="reception-submit">Enviar</button>
+            </form>
+
+            <div class="ship-container ship-mall" id="ship-mall">
+                <input type="file" id="file_input" accept=".jpg, .jpeg, .png, .jpe" style="display: none">
+                <div id="image-container" class="image-container" onclick="">
+                    Clique para selecionar uma imagem!
+                </div>
+                <button class="submit" id="updateReceiver-button" onclick="updateReceiver()">Enviar</button>
+            </div>
+        </div>
+
+        <form id="return-container" class="container return-container" style="display: none;">
+            <div class="helpers">
+                <h1 id="return-message">Escaneie o codigo da correspondencia!</h1>
+                <input id="return_input" type="search" placeholder="Codigo da Correspondencia!">
+                <button id="generate_button" onclick="genReturn()" type="button">Imprimir arquivo</button>
+            </div>
+            <div class="return-mails-container" id="return-mails-container">
+                <div class="return-mails-title">
+                    <b id="id">ID</b>
+                    <b id="name">Nome</b>
+                    <b id="code">Codigo AR</b>
+                    <b id="fantasy">Nome Fantasia</b>
+                    <b id="type">Tipo</b>
+                    <b id="priority">Prioridade</b>
+                    <b id="join_date">Data Entrada</b>
+                    <b id="receive_name">Motivo</b>
+                </div>
+                <div id="return-mails-values" class="return-mails-values">
+
+                </div>
+            </div>
+        </form>
+    </main>
+</body>
+
+</html>
