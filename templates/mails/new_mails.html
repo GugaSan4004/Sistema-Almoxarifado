@@ -11,8 +11,8 @@
     <link href="/static/css/main.css" rel="stylesheet">
 </head>
 
-<body class="bg-default-blue grid h-screen relative">
-    <header class="grid col-span-64 row-span-2 grid-cols-48 text-white">
+<body class="bg-default-blue grid grid-rows-[1.7cm_auto] h-screen relative">
+    <header class="grid grid-cols-48 text-white">
         <div id="open-sidebar" class="cursor-pointer row-span-2 col-span-2 flex items-center justify-center">
             <svg class="w-8 h-8" viewBox="0 25 70 50">
                 <path class="stroke-8 stroke-white" d="M 0,30 H 70" />
@@ -26,8 +26,8 @@
         </h1>
     </header>
 
-    <aside id="sidebar" class="fixed block top-0 left-0 z-50 h-screen w-64 bg-default-blue text-white shadow-2xl 
-     transform -translate-x-full transition-transform duration-300 ease-in-out border-r-4">
+    <aside id="sidebar"
+        class="fixed block top-0 left-0 z-50 h-screen w-64 bg-default-blue text-white shadow-2xl transform transition-transform duration-300 ease-in-out border-r-4 -translate-x-full">
         <img src="/static/imgs/logo/Nerd-Mails.png" alt="nerd_logo" class="absolute select-none h-16 top-3 right-25">
 
         <div id="close-sidebar" class="absolute top-0 right-0 cursor-pointer">
@@ -37,7 +37,7 @@
             </svg>
         </div>
 
-        <div class="*:border-y-gray-400 *:border-white *:select-none *:border-y *:cursor-pointer *:py-3.5 *:pl-2.5 *:transition-all *:duration-100 *:hover:border-l-6
+        <div class="*:border-y-gray-400 *:select-none *:border-y *:cursor-pointer *:py-3.5 *:pl-2.5 *:transition-all *:duration-100 *:hover:border-l-6
         flex flex-col gap-6 pt-24" id="aside-options">
             <a id="resumo" href="#" class="bg-gray-400/50 border-l-6 border-default-green">
                 Resumo
@@ -58,8 +58,42 @@
     </aside>
 
     <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 hidden z-40"></div>
+    <main class="**:**:text-sm flex overflow-hidden bg-white row-start-2">
+        <!-- <div
+            class=" bg-default-blue h-100 w-full overflow-x-auto overflow-y-scroll self-end mx-4 mb-4 text-white border border-gray-600">
 
-    <main class="bg-white col-span-64 row-start-3 row-span-34 text-center">
+            <div
+                class="sticky top-0 z-10 grid gap-2 bg-gray-800 p-3 font-bold border-b border-gray-600 text-sm min-w-300">
+                <span>ID</span>
+                <span>Nome</span>
+                <span>Cod. AR</span>
+                <span>Nome Fantasia</span>
+                <span>Tipo</span>
+                <span>Prioridade</span>
+                <span>Entrada</span>
+                <span>Recebedor / Motivo</span>
+                <span>Data Saída</span>
+                <span>Comprovante</span>
+            </div>
+
+            <div class="flex flex-col min-w-300">
+                <div
+                    class="grid gap-2 p-3 border-b border-gray-700/50 hover:bg-white/5 items-center text-xs transition-colors">
+                    <span class="text-gray-400">360</span>
+                    <span class="truncate font-medium" title="Nome Completo do Usuário Aqui">Transporte De Passageiros E
+                        Serviços De Fretamento</span>
+                    <span class="font-bold">QB782685462BR</span>
+                    <span class="truncate text-gray-300" title="Nome Fantasia da Empresa">Bemto Fragoso da minha</span>
+                    <span>Carta</span>
+                    <span
+                        class="px-2 py-0.5 bg-red-900/50 text-red-200 rounded-full text-center text-[10px]">Simples</span>
+                    <span>26/02/2026</span>
+                    <span class="truncate">Larissa de solt</span>
+                    <span>25-02-2026</span>
+                    <button class="bg-blue-600 hover:bg-blue-500 py-1 rounded cursor-pointer">CAI588BR352</button>
+                </div>
+            </div>
+        </div> -->
     </main>
 </body>
 
