@@ -6,32 +6,60 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Correspondencias</title>
 
+    <script src="/static/js/mails/new_mails.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <!-- <link href="/static/css/main.css" rel="stylesheet"> -->
+    <link href="/static/css/main.css" rel="stylesheet">
 </head>
 
-<body class="bg-blue-800 grid h-screen">
-
+<body class="bg-default-blue grid h-screen relative">
     <header class="grid col-span-64 row-span-2 grid-cols-48 text-white">
-        <div class="cursor-pointer row-span-2 col-span-2 flex items-center justify-center">
-            <svg class="w-10 h-10" viewBox="0 25 70 50">
+        <div id="open-sidebar" class="cursor-pointer row-span-2 col-span-2 flex items-center justify-center">
+            <svg class="w-8 h-8" viewBox="0 25 70 50">
                 <path class="stroke-8 stroke-white" d="M 0,30 H 70" />
                 <path class="stroke-8 stroke-white" d="M 0,50 H 70" />
                 <path class="stroke-8 stroke-white" d="M 0,70 H 70" />
             </svg>
         </div>
 
-        <h1 class="flex row-span-2 col-start-18 col-span-14 justify-center items-center text-3xl">
+        <h1 class="flex row-span-2 col-start-18 col-span-14 justify-center items-center text-3xl select-none">
             Sistema de Correspondencia
         </h1>
     </header>
 
-    <!-- <div class="grid col-span-6 row-span-full">
-        SIDEBAR
-    </div> -->
+    <aside id="sidebar" class="fixed block top-0 left-0 z-50 h-screen w-64 bg-default-blue text-white shadow-2xl 
+     transform -translate-x-full transition-transform duration-300 ease-in-out border-r-4">
+        <img src="/static/imgs/logo/Nerd-Mails.png" alt="nerd_logo" class="absolute select-none h-16 top-3 right-25">
 
-    <main class="bg-white col-span-64 row-start-3 row-span-34">
-        test
+        <div id="close-sidebar" class="absolute top-0 right-0 cursor-pointer">
+            <svg class="w-8 h-8 cursor-pointer" viewBox="0 25 70 50">
+                <path class="stroke-8 stroke-white" d="M 15,30 L 55,70" />
+                <path class="stroke-8 stroke-white" d="M 15,70 L 55,30" />
+            </svg>
+        </div>
+
+        <div class="*:border-y-gray-400 *:border-white *:select-none *:border-y *:cursor-pointer *:py-3.5 *:pl-2.5 *:transition-all *:duration-100 *:hover:border-l-6
+        flex flex-col gap-6 pt-24" id="aside-options">
+            <a id="resumo" href="#" class="bg-gray-400/50 border-l-6 border-default-green">
+                Resumo
+            </a>
+
+            <a id="reg-entrada" href="#">
+                Registrar Entradas
+            </a>
+
+            <a id="reg-saida" href="#">
+                Registrar Saidas
+            </a>
+
+            <a id="gen-devolucao" href="#">
+                Gerar Devolução
+            </a>
+        </div>
+    </aside>
+
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 hidden z-40"></div>
+
+    <main class="bg-white col-span-64 row-start-3 row-span-34 text-center">
     </main>
 </body>
 

@@ -2,6 +2,7 @@
 
 @theme {
     --color-default-blue: #02326f;
+    --color-default-green: #00D100;
 
     @keyframes slideOut {
         0% {
