@@ -32,15 +32,15 @@ from flask import Flask, abort, request, jsonify, render_template, send_from_dir
 # ################################ # 
 
 
-
-FOLDER = r"\\192.168.7.252\dados\OPERACOES\13-ALMOXARIFADO\0 - Sistema Almox"
+FOLDER = r"C:\Users\GUGA4\Documents\Projects\Sistema Almoxarifado\Sistema-Almoxarifado"
+# FOLDER = r"\\192.168.7.252\dados\OPERACOES\13-ALMOXARIFADO\0 - Sistema Almox"
 
 sqlite = sqlite_core.init(FOLDER)
 
 tools_db = sqlite_core.init.tools(sqlite)
 mails_db = sqlite_core.init.mails(sqlite)
 
-imgReader = imareocr.init()
+# imgReader = imareocr.init()
 returnGen = return_generator.init(FOLDER)
 
 app = Flask(__name__)
