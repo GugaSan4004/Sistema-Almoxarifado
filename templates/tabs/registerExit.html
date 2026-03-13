@@ -1,0 +1,111 @@
+{% if exit %}
+{% set values_data = exit['values'] %}
+{% set mail_data = exit['mail'] %}
+
+{% set tmp_id = values_data.tmp_id %}
+{% set ar_code = values_data.ar_code %}
+{% set date = values_data.date %}
+{% set potential_people = values_data.potential_people %}
+{% set id, name, code, fantasy, type, _, _, _, _, _, _, _, _, _, _, _ = mail_data %}
+
+<img src="/pictures/temp/{{ tmp_id }}.jpg" alt="Preview" onclick="window.open(event.target.src)"
+    class="hover:scale-105 transition-all cursor-pointer h-[50vh] w-[30vh] m-8 mx-auto rounded-sm shadow-lg border border-slate-200 justify-self-center">
+
+<!-- <div
+    class="flex mx-4 mb-4 items-end justify-between self-end h-max">
+    <div class="relative w-80 items-center flex">
+        <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+        </span>
+        <input name="code"
+            class="block w-full rounded-sm px-10 py-2 border border-gray-300 leading-5 bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-default-main focus:border-default-main sm:text-sm transition duration-300 ease-in-out"
+            placeholder="Buscar por nome, código AR, data..." type="search" id="filter-input" value="{{ ar_code }}">
+        <span onclick="document.getElementById('filter-input').value = ''" class="
+                    cursor-pointer absolute inset-y-0 right-2 flex items-center pl-3
+                ">
+            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                </path>
+            </svg>
+        </span>
+    </div>
+    <button
+        class="cursor-pointer h-11 disabled:bg-default-main/40 enabled:hover:text-default-secondary bg-default-main enabled:text-white disabled:text-black w-70 font-bold py-3 shadow-md transform active:scale-95 transition-all uppercase tracking-wide mt-4 rounded-sm"
+        type="submit">Registrar Saida</button>
+</div> -->
+
+<div
+    class="rounded-t-sm bg-white h-[30vh] overflow-x-auto overflow-y-scroll scrollbar-hide self-end mx-4 mb-4 border-b border-gray-600">
+    <div
+        class="grid grid-cols-[1cm_1fr_3.2cm_0.5fr_5.2cm_3.7cm_2.8cm] pr-2  *:transition-colors *:duration-300 bg-default-main cursor-pointer text-white sticky top-0 z-10 gap-2 *:h-10 font-semibold border-b border-gray-600 text-sm min-w-300 *:flex *:items-center *:justify-center *:select-none">
+        <span>ID</span>
+        <span>Nome</span>
+        <span>Codigo AR</span>
+        <span>Nome Fantasia</span>
+        <span>Recebedor(a)</span>
+        <span>Saída</span>
+        <span>Comprovante</span>
+    </div>
+
+    <div class="flex flex-col">
+        <form action="/api/get-mail-exit" method="post"
+            class="*:truncate *:overflow-hidden *:whitespace-nowrap grid-cols-[1cm_1fr_3.2cm_0.5fr_5.2cm_3.7cm_2.8cm]  duration-300 transition-colors grid gap-2 py-2 pr-2 border-b border-gray-700/50 hover:bg-default-main/15 items-center text-xs text-center *:text-ellipsis *:whitespace-nowrap *:overflow-hidden *:truncate">
+            <span>{{id}}</span>
+            <span class="text-start">{{name}}</span>
+            <input name="ar_code" type="text" value="{{ ar_code }}"
+                class="font-semibold text-center rounded-sm p-1 border border-gray-300 focus:ring-2 focus:ring-default-main outline-none appearance-none bg-white">
+            <span class="text-start">{{fantasy}}</span>
+            <input name="potential_people" type="text" value="{{ potential_people[0] }}"
+                class="text-center rounded-sm p-1 border border-gray-300 focus:ring-2 focus:ring-default-main outline-none appearance-none bg-white">
+            <input required type="date" name="date" value="{{ date }}"
+                class="text-center rounded-sm p-1 border border-gray-300 focus:ring-2 focus:ring-default-main outline-none appearance-none bg-white">
+            <span
+                class="rounded-sm duration-300 transition-colors cursor-pointer bg-gray-600/20 hover:bg-default-main hover:text-white py-1">
+                {{ type[:3]|upper ~ code[-5:] ~ id }}
+            </span>
+            <input type="text" name="tmp_id" hidden value="{{ tmp_id }}">
+            <button type="submit" hidden></button>
+        </form>
+
+    </div>
+</div>
+
+{% else %}
+
+<form id="extract-image" action="/api/extract-image"
+    class="w-full flex flex-col space-y-4 items-center row-span-2 self-center justify-self-center" method="post">
+    <div onclick="document.getElementById('file_input').click();" ondragover="
+                event.preventDefault();
+                event.target.classList.add('border-blue-500', 'bg-blue-50');"
+        ondragleave="event.target.classList.remove('border-blue-500', 'bg-blue-50');" ondrop="event.preventDefault();
+                event.target.classList.remove('border-blue-500', 'bg-blue-50');
+                
+                const files = event.dataTransfer.files;
+                if (files.length > 0) {
+                    document.getElementById('file_input').files = files;
+                    showPreview(files[0]);
+                }" id="drop-zone"
+        class="relative max-w-md border-4 border-dashed border-slate-300 rounded-sm p-8 text-center cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-all min-h-75 flex items-center justify-center self-center">
+
+        <input onchange="showPreview(event.target.files[0])" type="file" id="file_input" name="image"
+            accept=".jpg, .jpeg, .png, .jpe" hidden>
+
+        <div id="preview-container" class="space-y-2 pointer-events-none">
+            <div id="placeholder-text">
+                <h2 class="text-xl font-bold text-slate-700">Arraste o arquivo</h2>
+                <h1 class="text-slate-400 my-2">ou</h1>
+                <h2 class="text-blue-600 font-medium">Clique para selecionar!</h2>
+            </div>
+        </div>
+    </div>
+
+    <button type="submit" id="submit-btn" disabled
+        class="cursor-pointer h-11 disabled:bg-default-main/40 enabled:hover:text-default-secondary bg-default-main enabled:text-white disabled:text-black w-80 font-bold py-3 shadow-md transform active:scale-95 transition-all uppercase tracking-wide rounded-sm">
+        Analizar Arquivo
+    </button>
+</form>
+
+{% endif %}

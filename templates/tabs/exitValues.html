@@ -1,0 +1,118 @@
+<!-- <form class="flex flex-col row-span-2 justify-center items-center" action="">
+    <img src="/pictures/temp/"
+        class="max-h-80 max-w-50 m-8 mx-auto rounded-sm shadow-lg border border-slate-200 justify-self-center"
+        alt="Preview">
+    <input
+        class="w-60 text-center rounded-sm px-4 py-2 border border-gray-300 focus:ring-2 focus:ring-default-main outline-none appearance-none bg-white"
+        required type="text" name="code" value="{{ ar_code }}">
+    <input class="rounded-sm px-4 py-2 border border-gray-300 focus:ring-2 focus:ring-default-main outline-none appearance-none bg-white [&::-webkit-calendar-picker-indicator]:cursor-pointer" required type="date" name="date"
+        value="{{ date }}">
+    <select required name="people"
+        class="w-80 rounded-sm px-4 py-2 border border-gray-300 focus:ring-2 focus:ring-default-main outline-none appearance-none bg-white">
+        {% for people in potential_people %}
+        <option value="{{ people }}">{{ people | title }}</option>
+        {% endfor %}
+    </select>
+    <button type="submit">Registrar Saida</button>
+</form>
+
+<form
+    class="rounded-t-sm -row-start-1 col-span-2 bg-white h-[20vh] overflow-x-auto overflow-y-scroll scrollbar-hide self-end mx-4 mb-4 border-b border-gray-600">
+    <div
+        class="grid grid-cols-[1cm_1fr_3.2cm_0.5fr_5.2cm_3.7cm_2.8cm] pr-2  *:transition-colors *:duration-300 bg-default-main cursor-pointer text-white sticky top-0 z-10 gap-2 *:h-10 font-semibold border-b border-gray-600 text-sm min-w-300 *:flex *:items-center *:justify-center *:select-none">
+        <span onclick="setOrderBy('id')" class="text-default-secondary">ID</span>
+        <span onclick="setOrderBy('name')" class="">Nome</span>
+        <span onclick="setOrderBy('code')" class="">Codigo AR</span>
+        <span onclick="setOrderBy('fantasy')" class="">Nome Fantasia</span>
+        <span onclick="setOrderBy('receive_name')" class="">Recebedor(a)</span>
+        <span onclick="setOrderBy('receive_date')" class="">Saída</span>
+        <span onclick="setOrderBy('photo_id')" class="">Comprovante</span>
+    </div>
+    <div class="flex flex-col">
+        <div title=""
+            class="*:truncate *:overflow-hidden *:whitespace-nowrap grid-cols-[1cm_1fr_3.2cm_0.5fr_5.2cm_3.7cm_2.8cm]  duration-300 transition-colors grid gap-2 py-2 pr-2 border-b border-gray-700/50 hover:bg-default-main/15 items-center text-xs text-center *:text-ellipsis *:whitespace-nowrap *:overflow-hidden *:truncate">
+            <span>379</span>
+            <span class="text-start">Arcos Dourados Com De Alim</span>
+            <span class="font-semibold">AD179512284BR</span>
+            <span class="text-start">Mc Donalds</span>
+            <input required type="text" class="border-2 borde-black">
+            <input required type="date" name="date" value="{{ date }}"> class="border-2 borde-black">
+            <span
+                class="rounded-sm duration-300 transition-colors cursor-pointer bg-gray-600/20 hover:bg-default-main hover:text-white py-1">
+                ---
+            </span>
+        </div>
+
+    </div>
+</div>
+ -->
+
+
+
+
+
+
+
+
+
+<img src="/pictures/temp/{{ tmp_id }}.jpg" alt="Preview" onclick="window.open(event.target.src)"
+    class="hover:scale-105 transition-all cursor-pointer h-[50vh] w-[30vh] m-8 mx-auto rounded-sm shadow-lg border border-slate-200 justify-self-center">
+
+<form method="post" action="/api/get-mail" id="get-mail-exit" class="flex mx-4 mb-4 items-end justify-between self-end h-max">
+    <div class="relative w-80 items-center flex">
+        <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+        </span>
+        <input
+            name="code"
+            class="block w-full rounded-sm px-10 py-2 border border-gray-300 leading-5 bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-default-main focus:border-default-main sm:text-sm transition duration-300 ease-in-out"
+            placeholder="Buscar por nome, código AR, data..." type="search" id="filter-input" value="{{ ar_code }}">
+        <span onclick="document.getElementById('filter-input').value = ''" class="
+                    cursor-pointer absolute inset-y-0 right-2 flex items-center pl-3
+                ">
+            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                </path>
+            </svg>
+        </span>
+    </div>
+    <button
+        class="cursor-pointer h-11 disabled:bg-default-main/40 enabled:hover:text-default-secondary bg-default-main enabled:text-white disabled:text-black w-70 font-bold py-3 shadow-md transform active:scale-95 transition-all uppercase tracking-wide mt-4 rounded-sm"
+        type="submit">Registrar Saida</button>
+</form>
+
+<div
+    class="rounded-t-sm bg-white h-[20vh] overflow-x-auto overflow-y-scroll scrollbar-hide self-end mx-4 mb-4 border-b border-gray-600">
+    <div 
+        class="grid grid-cols-[1cm_1fr_3.2cm_0.5fr_5.2cm_3.7cm_2.8cm] pr-2  *:transition-colors *:duration-300 bg-default-main cursor-pointer text-white sticky top-0 z-10 gap-2 *:h-10 font-semibold border-b border-gray-600 text-sm min-w-300 *:flex *:items-center *:justify-center *:select-none">
+        <span onclick="setOrderBy('id')" class="text-default-secondary">ID</span>
+        <span onclick="setOrderBy('name')" class="">Nome</span>
+        <span onclick="setOrderBy('code')" class="">Codigo AR</span>
+        <span onclick="setOrderBy('fantasy')" class="">Nome Fantasia</span>
+        <span onclick="setOrderBy('receive_name')" class="">Recebedor(a)</span>
+        <span onclick="setOrderBy('receive_date')" class="">Saída</span>
+        <span onclick="setOrderBy('photo_id')" class="">Comprovante</span>
+    </div>
+
+    <div class="flex flex-col">
+        <div title=""
+            class="*:truncate *:overflow-hidden *:whitespace-nowrap grid-cols-[1cm_1fr_3.2cm_0.5fr_5.2cm_3.7cm_2.8cm]  duration-300 transition-colors grid gap-2 py-2 pr-2 border-b border-gray-700/50 hover:bg-default-main/15 items-center text-xs text-center *:text-ellipsis *:whitespace-nowrap *:overflow-hidden *:truncate">
+            <span>379</span>
+            <span class="text-start">Arcos Dourados Com De Alim</span>
+            <span class="font-semibold">{{ ar_code }}</span>
+            <span class="text-start">Mc Donalds</span>
+            <input type="text" value="{{ potential_people[0] }}"
+                class="text-center rounded-sm p-1 border border-gray-300 focus:ring-2 focus:ring-default-main outline-none appearance-none bg-white">
+            <input required type="date" name="date" value="{{ date }}"
+                class="text-center rounded-sm p-1 border border-gray-300 focus:ring-2 focus:ring-default-main outline-none appearance-none bg-white">
+            <span
+                class="rounded-sm duration-300 transition-colors cursor-pointer bg-gray-600/20 hover:bg-default-main hover:text-white py-1">
+                ---
+            </span>
+        </div>
+
+    </div>
+</div>

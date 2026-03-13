@@ -1,0 +1,40 @@
+<form action="/api/register-mail" method="post" id="register-mail"
+    class="p-8 bg-white rounded-xl shadow-lg overflow-hidden border-t-4 border-default-main row-span-2 w-[60vmax] self-center h-[40vmax] gap-x-3 justify-self-center grid grid-cols-2 *:w-full *:mb-8">
+    <h2 class="col-span-2 text-3xl! mt-8 font-bold text-center text-default-main">Cadastro de Correspondencia</h2>
+    <div>
+        <label class="block font-semibold text-gray-600 mb-1">Destinatario Completo</label>
+        <input name="sender" type="text" minlength="4" required
+            placeholder="Ex: Arcos Dourados Comercio de Alimentos S.A"
+            class="justify- rounded-sm w-full px-4 py-2 border border-gray-300 focus:ring-2 focus:ring-default-main focus:border-transparent outline-none transition-all">
+    </div>
+    <div>
+        <label class="block font-semibold text-gray-600 mb-1">Nome Fantasia</label>
+        <input name="fantasy" type="text" minlength="4" placeholder="Ex: Mc Donalds"
+            class="rounded-sm w-full px-4 py-2 border border-gray-300 focus:ring-2 focus:ring-default-main focus:border-transparent outline-none transition-all">
+    </div>
+    <div>
+        <label class="block font-semibold text-gray-600 mb-1">Tipo da Correspondencia</label>
+        <select required name="type"
+            class="rounded-sm w-full px-4 py-2 border border-gray-300 focus:ring-2 focus:ring-default-main outline-none appearance-none bg-white">
+            <option value="Caixa">Caixa</option>
+            <option value="Carta">Carta</option>
+            <option value="Pacote">Pacote</option>
+        </select>
+    </div>
+    <div>
+        <label class="block font-semibold text-gray-600 mb-1">Prioridade da Correspondencia</label>
+        <select required name="priority"
+            class="rounded-sm w-full px-4 py-2 border border-gray-300 focus:ring-2 focus:ring-default-main outline-none appearance-none bg-white">
+            <option value="Simples">Simples</option>
+            <option value="Judicial">Judicial</option>
+        </select>
+    </div>
+    <div class="col-span-2">
+        <label class="block font-semibold text-gray-600 mb-1">Codigo AR</label>
+        <input name="code" type="text" minlength="4" required placeholder="Ex: AB123456789BR"
+            class="rounded-sm w-full px-4 py-2 border border-gray-300 focus:ring-2 focus:ring-default-main focus:border-transparent outline-none transition-all">
+    </div>
+    <button type="submit"
+        class="col-span-2 cursor-pointer h-11 hover:text-default-secondary w-full bg-default-main text-white font-bold py-3 shadow-md transform active:scale-95 transition-all tracking-wide mt-4 rounded-sm">Salvar
+        Registro</button>
+</form>

@@ -26,7 +26,7 @@ class init:
 
         return "/static/files/devolucao.pdf"
     
-    def generate_return(self, data: dict):
+    def generate_return(self, data: dict, username: str):
         doc = Document(self.path + r"\static\files\template.docx")
 
         table = doc.tables[0]
@@ -40,8 +40,8 @@ class init:
             if index >= len(rows):
                 break
 
-            motivo = values[0].upper()
-            destinatario = values[1].upper()
+            motivo = values['reason'].upper()
+            destinatario = values['name'].upper()
 
             cells = rows[index].cells
             
@@ -71,10 +71,14 @@ class init:
 
         p = footer.paragraphs[0]
         run1 = p.add_run("DOCUMENTO EMITIDO EM:\n")
-        run2 = p.add_run(f"{datetime.now().strftime('%d/%m/%Y')}")
+        run2 = p.add_run(f"{datetime.now().strftime('%d/%m/%Y')}\n\n")
+        run3 = p.add_run("EMITIDO POR:\n")
+        run4 = p.add_run(f"{username}")
 
         run1.bold = True
         run2.bold = True
+        run3.bold = True
+        run4.bold = True
 
         p.alignment = WD_ALIGN_PARAGRAPH.RIGHT
             

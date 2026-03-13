@@ -1,0 +1,69 @@
+<div class="col-span-2 self-center text-3xl! font-bold text-center text-default-main">Gerador de Devolução</div>
+<div class="-row-start-2 ml-4 mb-3 relative md:w-80 h-max self-end items-center flex">
+    <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+        </svg>
+    </span>
+    <form class="w-full" action="/api/get-mail" method="post" id="get-mail">
+        <input
+            class="block w-full rounded-sm px-10 py-2 border border-gray-300 leading-5 bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-default-main focus:border-default-main sm:text-sm transition duration-300 ease-in-out"
+            placeholder="Buscar por código AR..." name="code" type="search" value="" required>
+        <button type="submit" hidden></button>
+    </form>
+</div>
+
+<form class="-row-start-2 mr-4 mb-3 self-end justify-self-end" action="/api/generate-return" method="post"
+    id="generate-return">
+    <button type="submit" {{ '' if pre_return_mails else 'disabled' }}
+        class="h-9.5 disabled:bg-default-main/40 enabled:hover:text-default-secondary bg-default-main enabled:text-white disabled:text-black cursor-pointer md:w-80 text-center active:scale-95 transition-all rounded-sm">
+        Gerar Documento
+    </button>
+</form>
+<!-- <button type="button"
+    class="-row-start-2 mr-4 mb-3 rounded-sm px-10 py-2 border border-gray-300 leading-5 relative md:w-80 h-max self-end justify-self-end items-center flex">
+    Gerar
+</button> -->
+<div id="return-preview"
+    class="rounded-t-sm -row-start-1 col-span-2 bg-white h-[60vh] overflow-x-auto overflow-y-scroll scrollbar-hide self-end mx-4 mb-4 border-b border-gray-600">
+    <div
+        class="grid grid-cols-[1cm_1fr_3.2cm_0.5fr_1.4cm_2cm_2.2cm_3cm] pr-2  *:transition-colors *:duration-300 bg-default-main text-white sticky top-0 z-10 gap-2 *:h-10 font-semibold border-b border-gray-600 text-sm min-w-300 *:flex *:items-center *:justify-center *:select-none">
+        <span>ID</span>
+        <span>Nome</span>
+        <span>Codigo AR</span>
+        <span>Nome Fantasia</span>
+        <span>Tipo</span>
+        <span>Prioridade</span>
+        <span>Entrada</span>
+        <span>Motivo</span>
+    </div>
+    <div class="flex flex-col">
+        {% for mail in pre_return_mails %}
+        {% set id, name, code, fantasy, type, priority, entryDate, _, _, _, _, _, _, _, _, _, reason = mail %}
+
+        <div onclick="if (event.target.nodeName != 'SELECT' && event.target.nodeName != 'OPTION') {
+                 delete return_mails['{{ code }}']; 
+                 loadBody();
+            }"
+            class="*:truncate cursor-pointer *:overflow-hidden *:whitespace-nowrap grid-cols-[1cm_1fr_3.2cm_0.5fr_1.4cm_2cm_2.2cm_3cm] {{ row_class }} duration-300 transition-colors grid gap-2 py-2 pr-2 border-b border-gray-700/50 hover:bg-default-main/15 items-center text-xs text-center *:text-ellipsis *:whitespace-nowrap *:overflow-hidden *:truncate">
+
+            <span>{{ id }}</span>
+            <span class="text-start">{{ name }}</span>
+            <span class="font-semibold">{{ code }}</span>
+            <span class="text-start">{{ fantasy }}</span>
+            <span>{{ type }}</span>
+            <span class="{{ get_priority_class(priority) }}">{{ priority }}</span>
+            <span>{{ format_date(entryDate) }}</span>
+
+            <select onchange="return_mails['{{ code }}']['reason'] = event.target.value"
+                class="rounded-sm duration-300 transition-colors cursor-pointer bg-gray-600/20 hover:bg-default-main hover:text-white py-1 p-2 text-center">
+                <option value="Desconhecido" {{ 'selected' if reason=='Recusado' else '' }}>Desconhecido</option>
+                <option value="Mudou-se" {{ 'selected' if reason=='Mudou-se' else '' }}>Mudou-se</option>
+                <option value="Recusado" {{ 'selected' if reason=='Recusado' else '' }}>Recusado</option>
+            </select>
+
+        </div>
+        {% endfor %}
+    </div>
+</div>

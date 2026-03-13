@@ -2,140 +2,118 @@
 <html lang="pt-BR">
 
 <head>
-    <title>Correspondencias</title>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Correspondencias</title>
 
-    <link rel="stylesheet" href="/static/css/default.css">
-    <link rel="stylesheet" href="/static/css/mails/mails.css">
 
-    <link rel="manifest" href="/templates/mails/manifest.json">
-
-    <script src="/static/js/mails/mails.js" defer></script>
+    <script src="/static/js/mails/mails.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link href="/static/css/main.css" rel="stylesheet">
 
     <link rel="icon" href="/static/imgs/logo/Nerd-Mails.png" type="image/png+xml">
-
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap"
-        rel="stylesheet">
 </head>
 
-<body>
-    <header>
-        <div class="options">
-            <button id="data-base" onclick="focuses('db-container'); getCorrespondences(null, null, 'me')">Registros</button>
-            <button id="shipment" onclick="focuses('ship-container')">Registrar Saida</button>
+<script>
+    const ALLOWED_TABS = {{ allowed_tabs | tojson }};
+    const FORMS_ID = {{ forms_id | tojson }}
+</script>
+
+<body class="bg-default-main text- grid grid-rows-[1.7cm_auto] h-screen relative">
+    <header class="grid grid-cols-48 text-white">
+        <div onclick="
+            document.getElementById('overlay').classList.remove('hidden');
+            sidebar.classList.toggle('-translate-x-full');
+            "
+            class="cursor-pointer row-span-2 col-span-2 flex items-center justify-center">
+            <svg class="w-[1.8vmax]" viewBox="0 25 70 50">
+                <path class="stroke-8 stroke-white" d="M 0,30 H 70" />
+                <path class="stroke-8 stroke-white" d="M 0,50 H 70" />
+                <path class="stroke-8 stroke-white" d="M 0,70 H 70" />
+            </svg>
         </div>
-        <h1>
-            Sistema de Correspondencias
+
+        <h1 class="flex row-span-2 col-start-18 col-span-14 justify-center items-center text-[1.8vmax] select-none ">
+            Sistema de Correspondencia
         </h1>
 
+        <div class="flex row-span-2 -col-start-10 col-span-9 items-center justify-end select-none gap-2 mr-4">
+            <span id="user_picture" class="bg-gray-600 pb-1 w-10 h-10 rounded-full flex justify-center items-center">
+                {{ session['user_name'][0] | upper if session['user_name'] else '?' }}
+            </span>
+            <h1 class="h-7" id="user_name">
+                {% set name = session['user_name'].split() %}
+                {% if name|length > 2 and name[1].lower() in ['da', 'do', 'das', 'dos', 'de'] %}
+                {{ name[:3] | join(' ') }}
+                {% else %}
+                {{ name[:2] | join(' ') if name else 'Visitante' }}
+                {% endif %}
+            </h1>
+            <a href="/logout">
+                <svg href id="user_logout" class="cursor-pointer" height="20" viewBox="0 0 24.00 24.00" fill="none">
+                    <path d="M21 12L13 12" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round"
+                        stroke-linejoin="round"></path>
+                    <path d="M18 15L20.913 12.087V12.087C20.961 12.039 20.961 11.961 20.913 11.913V11.913L18 9"
+                        stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path>
+                    <path
+                        d="M16 5V4.5V4.5C16 3.67157 15.3284 3 14.5 3H5C3.89543 3 3 3.89543 3 5V19C3 20.1046 3.89543 21 5 21H14.5C15.3284 21 16 20.3284 16 19.5V19.5V19"
+                        stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path>
+                </svg>
+            </a>
+        </div>
     </header>
 
-    <main>
-        <form class="container insert-container" id="insert-container" style="display: none;">
-            <h1 id="insert-message">Preencha os campos abaixo!</h1>
+    <aside id="sidebar"
+        class="fixed block top-0 left-0 z-50 h-screen w-64 bg-default-main text-white shadow-2xl transform transition-transform duration-300 ease-in-out border-r-4 -translate-x-full">
+        <img src="/static/imgs/logo/Nerd-Mails.png" alt="nerd_logo" class="absolute select-none h-16 top-3 right-25">
 
-            <input id="ar_code" name="code" type="text" placeholder="Codigo AR" required>
-
-            <input id="mail_name" name="name" type="text" placeholder="Nome que está na correspondencia" required>
-            <input id="mail_fantasy" name="fantasy" type="text" placeholder="Nome fantasia ( caso exista )">
-
-
-            <select id="mail_type" name="type" required>
-                <option value="caixa">Caixa</option>
-                <option value="carta">Carta</option>
-                <option value="pacote">Pacote</option>
-            </select>
-
-            <select id="mail_priority" name="priority" required>
-                <option value="simples">Simples</option>
-                <option value="judicial">Judicial</option>
-            </select>
-
-            <!-- <select id="mail_status" name="status" required>
-                <option value="on_reception">Na recepção</option>
-                <option value="almox">No Almoxarifado</option>
-                <option value="shipped">Entregue</option>
-                <option value="returned">Devolvido</option>
-            </select> -->
-
-            <button class="submit" onclick="register()" type="button" id="submit">Registrar</button>
-        </form>
-
-        <div class="container db-container" id="db-container" style="display: none;">
-            <div id="caption" class="caption">
-                <h2>Resumo</h2>
-                <h1 id="caption_total"></h1>
-                <h1 id="caption_returned"></h1>
-                <h1 id="caption_shipped"></h1>
-                <h1 id="caption_delayed"></h1>
-            </div>
-            <div class="helpers">
-                <input id="search_input" type="search" placeholder="Filtro (id, nome, tipo, Etc)!">
-                <button id="search_button"
-                    onclick="getCorrespondences(document.getElementById('search_input').value)">Buscar</button>
-            </div>
+        <div onclick="
+            document.getElementById('overlay').classList.add('hidden');
+            sidebar.classList.toggle('-translate-x-full');
+        " class="absolute top-0 right-0 cursor-pointer">
+            <svg class="w-7 h-7 cursor-pointer" viewBox="0 25 70 50">
+                <path class="stroke-8 stroke-white" d="M 15,30 L 55,70" />
+                <path class="stroke-8 stroke-white" d="M 15,70 L 55,30" />
+            </svg>
         </div>
 
-        <div class="container" id="ship-container" style="display: none;">
-            <form class="ship-container ship-almox" id="ship-almox" style="display: none;">
-                <h1 id="reception-insert-message">Preencha os campos abaixo!</h1>
+        <div class="*:border-y-gray-400 *:select-none *:border-y *:cursor-pointer *:py-3.5 *:pl-2.5 *:transition-all *:duration-100 *:hover:border-l-6
+        flex flex-col gap-6 pt-24" id="aside-options">
+        </div>
+    </aside>
 
-                <input id="mail_code" name="code" type="text" placeholder="Codigo AR" required>
-
-                <select id="receiver_name" name="type" required>
-                    <option value="kayro">Kayro</option>
-                    <option value="guilherme">Guilherme</option>
-                    <option value="gustavo">Gustavo</option>
-                    <option value="other">Outro(a)</option>
-                </select>
-
-                <select id="sender_name" name="type" required>
-                    <option value="yara">Yara</option>
-                    <option value="lidia">Lidia</option>
-                    <option value="Michelle">Michelle</option>
-                    <option value="other">Outro(a)</option>
-                </select>
-
-                <button class="submit" onclick="receivedOnReception()" type="button"
-                    id="reception-submit">Enviar</button>
-            </form>
-
-            <div class="ship-container ship-mall" id="ship-mall">
-                <input type="file" id="file_input" accept=".jpg, .jpeg, .png, .jpe" style="display: none">
-                <div id="image-container" class="image-container" onclick="">
-                    Clique para selecionar uma imagem!
+    <div id="overlay"
+        onclick="
+            if(event.target.id == 'overlay') {
+                document.getElementById('overlay').classList.add('hidden');
+                sidebar.classList.toggle('-translate-x-full');
+            }
+        "
+        class="fixed inset-0 z-40 flex flex-col items-center justify-center hidden bg-black/50 backdrop-blur-xs pointer-events-auto">
+        <div class="hidden fixed inset-0 z-50 flex flex-col justify-center" id="loading">
+            <div class="relative flex items-center justify-center">
+                <div class="w-16 h-16 border-4 border-slate-200 border-t-default-main rounded-full animate-spin"></div>
+                <div
+                    class="absolute w-8 h-8 border-4 border-slate-200 border-b-default-main rounded-full animate-reverse-spin">
                 </div>
-                <button class="submit" id="updateReceiver-button" onclick="updateReceiver()">Enviar</button>
+            </div>
+
+            <div class="mt-6 text-center select-none">
+                <h2 class="text-xl font-semibold text-white tracking-wide">Carregando Documento</h2>
+                <p class="text-sm text-slate-300 animate-pulse">Isso levará apenas alguns segundos...</p>
             </div>
         </div>
+    </div>
 
-        <form id="return-container" class="container return-container" style="display: none;">
-            <div class="helpers">
-                <h1 id="return-message">Escaneie o codigo da correspondencia!</h1>
-                <input id="return_input" type="search" placeholder="Codigo da Correspondencia!">
-                <button id="generate_button" onclick="genReturn()" type="button">Imprimir arquivo</button>
-            </div>
-            <div class="return-mails-container" id="return-mails-container">
-                <div class="return-mails-title">
-                    <b id="id">ID</b>
-                    <b id="name">Nome</b>
-                    <b id="code">Codigo AR</b>
-                    <b id="fantasy">Nome Fantasia</b>
-                    <b id="type">Tipo</b>
-                    <b id="priority">Prioridade</b>
-                    <b id="join_date">Data Entrada</b>
-                    <b id="receive_name">Motivo</b>
-                </div>
-                <div id="return-mails-values" class="return-mails-values">
+    <!-- <div onclick="toggleSidebar()" id="sidebar-overlay" class="fixed inset-0 bg-black/50 hidden z-40"></div> -->
 
-                </div>
-            </div>
-        </form>
+    <main class="**:**:text-sm grid grid-rows-2 overflow-hidden bg-white row-start-2">
+
     </main>
+
+    <img id="img-preview"
+        class="absolute top-0 left-0 pointer-events-none z-50 transition-opacity duration-300 ease-in-out opacity-0 max-h-70 bg-white"
+        src="" alt="Imagem não Encontrada!">
 </body>
 
 </html>

@@ -1,0 +1,146 @@
+<div class="-row-start-2 ml-4 mb-4 relative w-full md:w-80 h-max self-end items-center flex">
+    <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+        </svg>
+    </span>
+    <input onkeydown="if(event.key == 'Enter') { setFilter(event.target.value) } "
+        class="block w-full rounded-sm px-10 py-2 border border-gray-300 leading-5 bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-default-main focus:border-default-main sm:text-sm transition duration-300 ease-in-out"
+        placeholder="Buscar por nome, código AR, data..." type="search" id="filter-input" value="{{ filter }}">
+    <span onclick="setFilter('')" class="
+                    cursor-pointer absolute inset-y-0 right-2 flex items-center pl-3
+                ">
+        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+            </path>
+        </svg>
+    </span>
+</div>
+<div class="-row-start-2 flex mr-4 mb-4 items-center gap-2 justify-end self-end h-18">
+    <div id="stats-extra"
+        class="flex gap-3 transition-all duration-800 ease-in-out overflow-hidden *:rounded-sm *:text-ellipsis *:whitespace-nowrap *:overflow-hidden *:truncate h-full *:flex *:justify-center *:flex-col opacity-100 translate-x-0 max-w-4xl">
+        <div onclick="setFilter('delayed')"
+            class="cursor-pointer bg-red-600/8 hover:bg-red-600/20 duration-300 transition-colors border-red-600 text-red-600 border-l-4 p-2 px-4 shadow-sm w-45">
+            <p class="uppercase font-bold">Atrasadas</p>
+            <p class="font-semibold">{{ totals.delayed }}</p>
+        </div>
+        <div onclick="setFilter('returned')"
+            class="cursor-pointer bg-stone-500/8 hover:bg-stone-500/20 duration-300 transition-colors border-stone-500 text-stone-500 border-l-4 p-2 px-4 shadow-sm w-45">
+            <p class="uppercase font-bold">Devolvidas</p>
+            <p class="font-semibold">{{ totals.returned }}</p>
+        </div>
+        <div onclick="setFilter('shipped')"
+            class="cursor-pointer bg-default-main/8 hover:bg-default-main/25 duration-300 transition-colors border-default-main text-default-main border-l-4 p-2 px-4 shadow-sm w-45">
+            <p class="uppercase font-bold">Entregues</p>
+            <p class="font-semibold">{{ totals.shipped }}</p>
+        </div>
+        <div onclick="setFilter('casualty')"
+            class="cursor-pointer bg-pink-600/7 hover:bg-pink-600/16 duration-300 transition-colors border-pink-600 text-pink-600 border-l-4 p-2 px-4 shadow-sm w-45">
+            <p class="uppercase font-bold">Sinistros</p>
+            <p class="font-semibold">{{ totals.casualty }}</p>
+        </div>
+        <div onclick="setFilter('reception')"
+            class="cursor-pointer bg-yellow-600/7 hover:bg-yellow-600/16 duration-300 transition-colors border-yellow-600 text-yellow-600 border-l-4 p-2 px-4 shadow-sm w-45">
+            <p class="uppercase font-bold">Na recepção</p>
+            <p class=" font-semibold">{{ totals.reception }}</p>
+        </div>
+        <div onclick="setFilter('almox')"
+            class="cursor-pointer bg-default-main/8 hover:bg-default-main/25 duration-300 transition-colors border-default-main text-default-main border-l-4 p-2 px-4 shadow-sm w-50">
+            <p class="uppercase font-bold">Almoxarifado</p>
+            <p class="font-semibold">{{ totals.almox }}</p>
+        </div>
+    </div>
+    <div onclick="toggleHelpers()"
+        class="bg-default-main p-4 rounded-sm shadow-md w-27 cursor-pointer transition duration-300 hover:bg-blue-600 z-10 h-full flex justify-center flex-col">
+        <p class="text-xs font-bold text-blue-100 uppercase tracking-wider">Total</p>
+        <p data-field="total" class="text-2xl font-black text-white">{{ totals.total }}</p>
+    </div>
+</div>
+<div
+    class="rounded-t-sm -row-start-1 col-span-2 bg-white h-[60vh] overflow-x-auto overflow-y-scroll scrollbar-hide self-end mx-4 mb-4 border-b border-gray-600">
+    <div
+        class="grid grid-cols-[1cm_1fr_3.2cm_0.5fr_1.4cm_2cm_2.2cm_3.7cm_2.5cm_2.8cm] pr-2  *:transition-colors *:duration-300 bg-default-main cursor-pointer text-white sticky top-0 z-10 gap-2 *:h-10 font-semibold border-b border-gray-600 text-sm min-w-300 *:flex *:items-center *:justify-center *:select-none">
+        <span onclick="setOrderBy('id')" class="{% if actualOrder == 'id' %}text-default-secondary{% endif %}">ID</span>
+        <span onclick="setOrderBy('name')" class="{% if actualOrder == 'name' %}text-default-secondary{% endif %}">Nome</span>
+        <span onclick="setOrderBy('code')" class="{% if actualOrder == 'code' %}text-default-secondary{% endif %}">Codigo AR</span>
+        <span onclick="setOrderBy('fantasy')" class="{% if actualOrder == 'fantasy' %}text-default-secondary{% endif %}">Nome Fantasia</span>
+        <span onclick="setOrderBy('type')" class="{% if actualOrder == 'type' %}text-default-secondary{% endif %}">Tipo</span>
+        <span onclick="setOrderBy('priority')" class="{% if actualOrder == 'priority' %}text-default-secondary{% endif %}">Prioridade</span>
+        <span onclick="setOrderBy('join_date')" class="{% if actualOrder == 'join_date' %}text-default-secondary{% endif %}">Entrada</span>
+        <span onclick="setOrderBy('receive_name')" class="{% if actualOrder == 'receive_name' %}text-default-secondary{% endif %}">Recebedor(a)</span>
+        <span onclick="setOrderBy('receive_date')" class="{% if actualOrder == 'receive_date' %}text-default-secondary{% endif %}">Saída</span>
+        <span onclick="setOrderBy('photo_id')" class="{% if actualOrder == 'photo_id' %}text-default-secondary{% endif %}">Comprovante</span>
+    </div>
+    <div class="flex flex-col">
+        {% for mail in mails %}
+        {% set id, name, code, fantasy, type, priority, entryDate, _, _, _, _, status, receiverName, exitDate, photoId, _ =
+        mail %}
+
+        {% set row_class = "" %}
+        {% set row_title = "" %}
+
+        {% if status == "returned" %}
+        {% set row_class = "text-stone-500" %}
+        {% elif status == "casualty" %}
+        {% set row_class = "text-pink-600" %}
+        {% elif status in ["almox", "reception"] and entryDate %}
+        {% set hp, limit = is_delayed(entryDate, priority) %}
+        {% if hp > limit %}
+        {% set row_class = "text-red-600 font-bold" %}
+        {% set row_title = "Dias parados: " ~ ((hp / 24) | round | int | string) %}
+        {% elif status == "reception" %}
+        {% set row_class = "text-yellow-600" %}
+        {% endif %}
+
+        {% endif %}
+
+        <div
+            class="*:truncate *:overflow-hidden *:whitespace-nowrap grid-cols-[1cm_1fr_3.2cm_0.5fr_1.4cm_2cm_2.2cm_3.7cm_2.5cm_2.8cm] {{ row_class }} duration-300 transition-colors grid gap-2 py-2 pr-2 border-b border-gray-700/50 hover:bg-default-main/15 items-center text-xs text-center *:text-ellipsis *:whitespace-nowrap *:overflow-hidden *:truncate"
+            title="{{ row_title }}">
+            
+            <span>{{ id }}</span>
+            <span class="text-start">{{ name }}</span>
+            <span class="font-semibold">{{ code }}</span>
+            <span class="text-start">{{ fantasy }}</span>
+            <span>{{ type }}</span>
+            <span class="{{ get_priority_class(priority) }}">{{ priority }}</span>
+            <span>{{ format_date(entryDate) }}</span>
+            <span>{{ receiverName if receiverName else "---" }}</span>
+            <span>{{ format_date(exitDate) if exitDate else "---" }}</span>
+
+            <span 
+                onclick="window.open(event.target.dataset.img, '_blank').focus();" 
+                onmouseover="resume_hoverTimeout = setTimeout(() => {
+                        const imgSrc = event.target.dataset.img;
+                        if (!imgSrc) return;
+
+                        if (document.getElementById('pp').src !== imgSrc) {
+                            changePreviewPicture(imgSrc);
+                        }
+
+                        updatePreviewPosition(event);
+                    }, 150);
+                "
+                onmousemove="if (!document.getElementById('pp').className.split(' ').some(function (w) { return w === 'opacity-0' })) {
+                    updatePreviewPosition(event);
+                }
+                "
+
+                onmouseleave="clearTimeout(resume_hoverTimeout);
+                    changePreviewPicture();
+                "
+
+                class="rounded-sm duration-300 transition-colors cursor-pointer bg-gray-600/20 hover:bg-default-main hover:text-white py-1"
+                {% if photoId %} data-img="/pictures/mails/{{ photoId }}.jpg"> {{ photoId }}
+                {% else %}
+                > ---
+                {% endif %}
+            </span>
+
+        </div>
+        {% endfor %}
+        <img class="absolute top-0 left-0 pointer-events-none z-50 transition-opacity duration-300 ease-in-out opacity-0 max-h-70 bg-white"
+            src="" alt="Imagem não Encontrada!" id="pp">
+    </div>
+</div>

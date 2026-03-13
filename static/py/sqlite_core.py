@@ -5,314 +5,319 @@ from rapidfuzz import fuzz
 
 from datetime import datetime, date
 
+
 class init:
     def __init__(self, folder) -> None:
-        self.connector = sqlite3.connect(folder + r"\almoxarifado.sqlite", check_same_thread=False)
-    
-    def log_edit(self, route, method, value_id, code, message, fields_changed, list_values, ip):
-        cur = self.connector.cursor()
-        cur.execute("""
-            INSERT INTO edit_logs
-            (route, method, value_id, code, message, fields_changed, list_values, ip)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        """, (str(route), str(method), str(value_id), str(code), str(message), str(fields_changed), str(list_values), str(ip))
-        )
-        self.connector.commit()
-        cur.close()
+        self.connector = sqlite3.connect(
+            folder + r"\almoxarifado.sqlite", check_same_thread=False)
 
     class mails:
         def __init__(self, parent: "init") -> None:
-            self.connection = parent.connector
-            self.connection: sqlite3.Connection = self.connection
-            
-        def updatePicture(self, receive_name, receive_date, photo_id, code, status):
+            self.connection: sqlite3.Connection = parent.connector
+            self.AllowedOrderDirection = [
+                "ASC",
+                "DESC"
+            ]
+
+        # def updatePicture(self, receive_name, receive_date, photo_id, code, status):
+        #     cur = self.connection.cursor()
+        #     try:
+        #         cur.execute(
+        #             "UPDATE mails SET receive_name = ?, receive_date = ?, photo_id = ?, status = ? WHERE code = ?",
+        #             (receive_name.title(), receive_date, photo_id, status, code.upper())
+        #         )
+        #         self.connection.commit()
+        #     except Exception as e:
+        #         print(e)
+        #     cur.close()
+
+        # def updateReceiver(self, code, receiver, sender):
+        #     cur = self.connection.cursor()
+        #     try:
+        #         cur.execute(
+        #             "UPDATE mails SET ReceivedOnReceptionBy = ?, SendedOnReceptionBy = ?, LeaveReceptionAt = ?, status = 'almox' WHERE code = ?",
+        #             (receiver, sender, str(datetime.now().strftime("%d-%m-%Y %H:%M")), code.upper())
+        #         )
+        #         self.connection.commit()
+        #     except Exception as e:
+        #         print(e)
+
+        #     cur.close()
+
+        def registerPickup(self, code: str, pickupuser: str, responsableuser: str) -> None:
             cur = self.connection.cursor()
-            try:
-                cur.execute(
-                    "UPDATE mails SET receive_name = ?, receive_date = ?, photo_id = ?, status = ? WHERE code = ?",
-                    (receive_name.title(), receive_date, photo_id, status, code.upper())
-                )
-                self.connection.commit()
-            except Exception as e:
-                print(e)
+
+            cur.execute("SELECT status FROM mails WHERE code = ?",
+                        (code,)
+                        )
+
+            result = cur.fetchone()
+
+            if (not result):
+                raise Exception("Correspondencia não encontrada!")
+
+            if (result[0] != "reception"):
+                raise Exception(
+                    "Correspondencia não disponivel para retirada!")
+
+            cur.execute("UPDATE mails set receivedOnReceptionBy = ?, sendedOnReceptionBy = ?, status = ?, leaveReceptionAt = ? WHERE code = ?",
+                        (
+                            pickupuser,
+                            responsableuser,
+                            "almox",
+                            datetime.now().strftime("%Y-%m-%d %H:%M"),
+                            code
+                        )
+                        )
+            self.connection.commit()
             cur.close()
 
-        def updateReceiver(self, code, receiver, sender):
+        def registerNewMail(self, sender: str, code: str, fantasy: str, type_: str, priority: str, username: str):
             cur = self.connection.cursor()
-            try:
-                cur.execute(
-                    "UPDATE mails SET ReceivedOnReceptionBy = ?, SendedOnReceptionBy = ?, LeaveReceptionAt = ?, status = 'almox' WHERE code = ?",
-                    (receiver, sender, str(datetime.now().strftime("%d-%m-%Y %H:%M")), code.upper())
-                )
-                self.connection.commit()
-            except Exception as e:
-                print(e)
-            
-            cur.close()
 
-        def update(self, code: str, value: str, column: str):
-            cur = self.connection.cursor()
-            try:
-                cur.execute(
-                    f"UPDATE mails SET {column.lower()} = ? WHERE code = ?",
-                    (
-                    value.title() if column.lower() != "status" else value,
-                    code.upper()
-                    )
-                )
-                self.connection.commit()
-            except Exception as e:
-                print(e)
-            
-            cur.close()
-            
-        def register(self, name: str, code: str, fantasy: str, type_: str, priority: str, status: str):
-            cur = self.connection.cursor()
-            
             def normalize(text):
                 if not text:
                     return ""
 
                 text = text.lower()
-                text = unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode("ascii")
+                text = unicodedata.normalize("NFKD", text).encode(
+                    "ascii", "ignore").decode("ascii")
 
-                text = re.sub(r'\b(ltda|sa|s\/a|me|eireli|comercio|de|alimentos)\b', '', text)
+                text = re.sub(
+                    r'\b(ltda|sa|s\/a|me|eireli|comercio|de|alimentos)\b', '', text)
 
                 text = re.sub(r'[^a-z0-9 ]', '', text)
                 text = re.sub(r'\s+', ' ', text).strip()
                 return text
-            
-            try:
-                if not fantasy or fantasy == "":
-                    threshold = 85
-                    
-                    cur.execute("""
-                        SELECT DISTINCT name, fantasy 
-                        FROM mails 
-                        WHERE fantasy IS NOT NULL AND fantasy != ''            
-                    """
-                    )
-                    
-                    known_rows = [
-                        {"name": n, "fantasy": f}
-                        for n, f in cur.fetchall()
-                    ]
-                    
-                    name_norm = normalize(name)
 
-                    best_score = 0
-                    best_fantasy = ""
+            if not fantasy or fantasy == "":
+                threshold = 85
 
-                    for row in known_rows:
-                        known_name_norm = normalize(row["name"])
-                        score = fuzz.token_set_ratio(name_norm, known_name_norm)
-
-                        if score > best_score:
-                            best_score = score
-                            best_fantasy = row["fantasy"]
-
-                    if best_score >= threshold:
-                        fantasy = best_fantasy
-                        
                 cur.execute("""
-                    INSERT INTO mails (name, code, fantasy, type, priority, status, join_date)
-                    VALUES (?, ?, ?, ?, ?, ?, ?)
-                """, (
-                        name.title(), 
-                        code.upper(), 
-                        fantasy.title(),
-                        type_.title(), 
-                        priority.title(),
-                        status,
-                        datetime.now().strftime("%Y-%m-%d")
-                    )
-                )
-                self.connection.commit()
-            except Exception as e:
-                return e
+                    SELECT DISTINCT name, fantasy
+                    FROM mails
+                    WHERE fantasy IS NOT NULL AND fantasy != ''
+                """
+                            )
+
+                known_rows = [
+                    {"name": n, "fantasy": f}
+                    for n, f in cur.fetchall()
+                ]
+
+                name_norm = normalize(sender)
+
+                best_score = 0
+                best_fantasy = ""
+
+                for row in known_rows:
+                    known_name_norm = normalize(row["name"])
+                    score = fuzz.token_set_ratio(
+                        name_norm, known_name_norm)
+
+                    if score > best_score:
+                        best_score = score
+                        best_fantasy = row["fantasy"]
+
+                if best_score >= threshold:
+                    fantasy = best_fantasy
+
+            cur.execute("""
+                INSERT INTO mails (name, code, fantasy, type, priority, joinDate, registeredBy)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            """, (
+                sender.title(),
+                code.upper(),
+                fantasy.title(),
+                type_.title(),
+                priority.title(),
+                datetime.now().strftime("%Y-%m-%d %H:%M"),
+                username.title()
+            )
+            )
+            self.connection.commit()
 
             cur.close()
             return None
 
-        
-        def getMails(self, mail_filter, orderBy, orderDirection):
+        def getMails(self, mail_filter: str | dict = "", orderBy: str = "", orderDirection: str = "ASC", fetchOne: bool = False) -> list:
             cur = self.connection.cursor()
-        
+
+            if orderDirection not in self.AllowedOrderDirection:
+                orderDirection = "ASC"
+
+            cur.execute("PRAGMA table_info(mails)")
+            tableColumns = cur.fetchall()
+
+            allowedCols = [coluna[1] for coluna in tableColumns]
+
+            if orderBy not in allowedCols:
+                orderBy = "id"
+
             if mail_filter:
-                # if orderBy == self.temp_orderBy:
-                #     self.direction_orderBy = "DESC" if self.direction_orderBy == "ASC" else "ASC"
-                # else:
-                #     self.temp_orderBy = orderBy
-                #     self.direction_orderBy = "DESC"
-                cur.execute(
-                    f"SELECT * FROM mails WHERE code LIKE ? OR name LIKE ? OR fantasy LIKE ? OR photo_id LIKE ? OR receive_name LIKE ? OR status = ? OR type LIKE ? OR priority LIKE ? ORDER BY {orderBy} {orderDirection}",
-                    (
-                        "%" + mail_filter + "%",
-                        "%" + mail_filter + "%",
-                        "%" + mail_filter + "%",
-                        "%" + mail_filter + "%",
-                        "%" + mail_filter + "%",
-                        mail_filter,
-                        "%" + mail_filter.title() + "%",
-                        "%" + mail_filter.title() + "%"
+                if mail_filter == "delayed":
+                    cur.execute(
+                        f"SELECT * FROM mails WHERE((priority = 'Simples' AND (julianday('now') - julianday(joinDate || ':00')) * 24 >= 120) OR ( priority = 'Judicial' AND (julianday('now') - julianday(joinDate || ':00')) * 24 >= 72)) AND (status = 'almox' OR status = 'reception') ORDER BY {orderBy} {orderDirection}",
                     )
-                )
-                correspondences = cur.fetchmany(300)
+                elif type(mail_filter) == dict:
+                    correspondences = []
+                    for mailCode, returnReason in mail_filter.items():
+                        cur.execute(
+                            f"SELECT * FROM mails WHERE code = ?",
+                            (mailCode,)
+                        )
+                        correspondences.append(cur.fetchone() + (returnReason['reason'],))
+                    cur.close()
+                    return correspondences
+                else:
+                    cur.execute(
+                        f"SELECT * FROM mails WHERE code LIKE ? OR name LIKE ? OR fantasy LIKE ? OR pictureId LIKE ? OR deliveryDetail LIKE ? OR status = ? OR type LIKE ? OR priority LIKE ? ORDER BY {orderBy} {orderDirection}",
+                        (
+                            "%" + mail_filter + "%",
+                            "%" + mail_filter + "%",
+                            "%" + mail_filter + "%",
+                            "%" + mail_filter + "%",
+                            "%" + mail_filter + "%",
+                            mail_filter,
+                            "%" + mail_filter.title() + "%",
+                            "%" + mail_filter.title() + "%"
+                        )
+                    )
             else:
-                # if orderBy == self.temp_orderBy:
-                #     self.direction_orderBy = "DESC" if self.direction_orderBy == "ASC" else "ASC"
-                # else:
-                #     self.temp_orderBy = orderBy
-                #     self.direction_orderBy = "DESC"
-                
-                cur.execute(f"SELECT * FROM mails ORDER BY {orderBy} {orderDirection}")
-                
-                correspondences = cur.fetchmany(300)
-                
+                cur.execute(
+                    f"SELECT * FROM mails ORDER BY {orderBy} {orderDirection}")
+
+            correspondences = cur.fetchone() if fetchOne else cur.fetchmany(300)
+
             cur.close()
 
             return correspondences
 
-        def getTotals(self):
+        def getTotals(self) -> dict[str, int]:
             cur = self.connection.cursor()
-            cur.execute("SELECT status, join_date FROM mails")
+            cur.execute("SELECT status, joinDate, priority FROM mails")
 
             rows = cur.fetchall()
             cur.close()
-            
-            
-            today = date.today()
-            
+
             total = 0
             returned = 0
             shipped = 0
             delayed = 0
-            
-            for status, join_date in rows:
+            casualty = 0
+            reception = 0
+            almox = 0
+
+            for status, join_date, priority in rows:
                 total += 1
 
                 if status == "returned":
                     returned += 1
                 elif status == "shipped":
                     shipped += 1
+                elif status == "casualty":
+                    casualty += 1
+                elif status == "reception":
+                    reception += 1
+                elif status == "almox":
+                    almox += 1
 
-                if join_date and status in ["almox", "on_reception"]:
+                if join_date and status in ["almox", "reception"]:
                     try:
-                        d = datetime.strptime(join_date, "%Y-%m-%d").date()
-                        if (today - d).days > 6:
+                        entry_date = datetime.strptime(
+                            join_date, "%Y-%m-%d %H:%M")
+                        now = datetime.now()
+
+                        diff = now - entry_date
+                        hours_passed = diff.total_seconds() / 3600
+
+                        thresholds = {
+                            "Simples": 120,
+                            "Judicial": 72
+                        }
+
+                        limit = thresholds.get(priority, 48)
+
+                        if hours_passed > limit:
                             delayed += 1
-                    except ValueError:
+                    except Exception:
                         pass
-            
+
             return {
                 "total": total,
                 "returned": returned,
                 "shipped": shipped,
-                "delayed": delayed
+                "delayed": delayed,
+                "casualty": casualty,
+                "reception": reception,
+                "almox": almox
             }
-    
+
     class users:
         def __init__(self, parent: "init") -> None:
-            self.connection = parent.connector
-        
-        
-                
-    class tools:
-        def __init__(self, parent: "init") -> None:
-            self.connection = parent.connector
-        
-        def getTools(self):
-            try:
-                cur = self.connection.cursor()
-                cur.execute("SELECT * FROM tools")
-                result = cur.fetchall()
-                
-                cur.close()
-                
-                return result
-            except Exception as e:
-                print(e)
-                
-        def getMovementsCount(self):
-            cur = self.connection.cursor()
-            cur.execute("SELECT MAX(id) FROM tools_movements")
-            
-            count: int = cur.fetchone()[0]
-            
-            cur.close()
-            return 1 if count is None else count + 1
-        
-        def setToolMissing(self, code: str):
-            try:
-                cur = self.connection.cursor()
-                cur.execute("UPDATE tools set id_movements = NULL WHERE (id = ? OR nome LIKE ?)", 
-                    (code, "%" + code + "%")
-                )
-                
-                self.connection.commit()
-                cur.close()
-            except Exception as e:
-                print(e)
-                
-        def setToolCasualty(self, code: str):
-            try:
-                cur = self.connection.cursor()
-                cur.execute("UPDATE tools set status = 'Casualty' WHERE (id = ? OR nome LIKE ?)", 
-                    (code, "%" + code + "%")
-                )
-                
-                self.connection.commit()
-                cur.close()
-            except Exception as e:
-                print(e)
-                
-        def searchTools(self, code: str):
-            cur = self.connection.cursor()
-            
-            if not code:
-                cur.execute("SELECT * FROM tools")
-                result = cur.fetchall()
-            else:
-                cur.execute("SELECT * FROM tools WHERE id LIKE '%' || ? || '%' OR nome LIKE '%' || ? || '%' OR id_alternative LIKE '%' || ? || '%'", (code, code, code))
-                result = cur.fetchone()
+            self.connection: sqlite3.Connection = parent.connector
 
-            cur.close()
-            return result
-        
-        def updateTools(self, tool_id, column, value) -> None:
+        def getUserData(self, param: str) -> list | None:
             cur = self.connection.cursor()
-            
-            cur.execute(f"UPDATE tools SET {column} = ? WHERE id = ?", (value, tool_id))
-            self.connection.commit()
-            
-            cur.close()
-        
-        def addMovement(self, tool_id, item, day, month, year, time, movement_type):
-            cur = self.connection.cursor()
-            
-            cur.execute("INSERT INTO tools_movements (id, item, day, month, year, time, type) VALUES (?, ?, ?, ?, ?, ?, ?)", (str(tool_id).zfill(6), item, day, month, year, time, movement_type))
-            cur.execute("SELECT * FROM tools_movements WHERE id = ?", (str(tool_id).zfill(6),))
+
+            cur.execute("SELECT * FROM users WHERE name LIKE ? or id = ?",
+                        (param.title() + "%" if type(param) == str else param, param))
+
             result = cur.fetchone()
-            
+
+            cur.close()
+
+            return result
+
+        def getUsernames(self) -> list:
+            cur = self.connection.cursor()
+
+            cur.execute("SELECT name FROM users")
+
+            result = cur.fetchall()
+
+            cur.close()
+
+            return result
+
+        def getAllowedTabs(self, role: str) -> list | None:
+            cur = self.connection.cursor()
+
+            allowed_tabs = []
+
+            cur.execute(
+                "SELECT allowed_tabs FROM roles WHERE name = ?", (role,))
+
+            for line in cur.fetchone()[0].splitlines():
+                if ":" in line:
+                    key, value = line.split(":", 1)
+
+                    allowed_tabs.append({"id": key, "name": value})
+
+            return allowed_tabs
+
+        def registerNewUser(self, username: str, role: str) -> None:
+            cur = self.connection.cursor()
+
+            cur.execute("INSERT INTO users (name, role) VALUES (?, ?)",
+                        (username.title(), role.lower()))
             self.connection.commit()
             cur.close()
 
-            return result 
-
-        def getAllLoanedItems(self):
+        def changePassword(self, password: str, userid: str, username: str) -> None:
             cur = self.connection.cursor()
-            
-            cur.execute("SELECT * FROM tools WHERE status = 'Emprestado' OR status = 'Casualty'")
-            results = cur.fetchall()
-            
+            cur.execute("UPDATE users set password = ?, changepass = 0 WHERE id = ? AND name = ?",
+                        (password, userid, username.title()))
+            self.connection.commit()
             cur.close()
-            return results
 
-        def getAllMovements(self):
+        def getRoles(self) -> list | None:
             cur = self.connection.cursor()
-            
-            cur.execute("SELECT * FROM tools_movements ORDER BY id DESC")
-            results = cur.fetchall()
-            
+
+            cur.execute("SELECT name FROM roles")
+
+            result = cur.fetchall()
+
             cur.close()
-            return results
+
+            return result
