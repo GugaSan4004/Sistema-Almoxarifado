@@ -27,7 +27,7 @@ class init:
         return "/static/files/devolucao.pdf"
     
     def generate_return(self, data: dict, username: str):
-        doc = Document(self.path + r"\static\files\template.docx")
+        doc = Document(self.path / "static" / "files" / "template.docx")
 
         table = doc.tables[0]
 
@@ -82,7 +82,7 @@ class init:
 
         p.alignment = WD_ALIGN_PARAGRAPH.RIGHT
             
-        docpath = self.path + r"\static\files\devolucao.docx"
+        docpath = self.path / "static" / "files" / "devolucao.docx"
         
         doc.save(docpath)
         converted = self.convertPDF(docpath)

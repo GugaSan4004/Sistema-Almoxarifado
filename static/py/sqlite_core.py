@@ -9,7 +9,7 @@ from datetime import datetime, date
 class init:
     def __init__(self, folder) -> None:
         self.connector = sqlite3.connect(
-            folder + r"\almoxarifado.sqlite", check_same_thread=False)
+            folder / 'almoxarifado.sqlite', check_same_thread=False)
 
     class mails:
         def __init__(self, parent: "init") -> None:
@@ -48,7 +48,7 @@ class init:
             cur = self.connection.cursor()
 
             cur.execute("SELECT status FROM mails WHERE code = ?",
-                        (code,)
+                        (code.upper(),)
                         )
 
             result = cur.fetchone()

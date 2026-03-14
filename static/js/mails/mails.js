@@ -1,9 +1,9 @@
 // const ALLOWED_TABS FORMS_ID
 let main = ""
 let sidebar = ""
-let sidebarIsOpen = true;
 let actualTabId = "resume"
 
+let resume_helpersOpen = true;
 let resume_lastFilter = ""
 let resume_lastOrderBy = "id"
 let resume_orderDirection = "DESC"
@@ -26,17 +26,20 @@ const loading = (on) => {
     }
 }
 
-async function loadBody(optional = "") {
+async function loadBody() {
     loading(true)
+
     const response = await fetch(`/api/render-body/${actualTabId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify([resume_lastFilter, resume_lastOrderBy, resume_orderDirection, return_mails, optional])
+        body: JSON.stringify([resume_lastFilter, resume_lastOrderBy, resume_orderDirection, return_mails])
     });
 
+    loading(false)
+
     if (response.ok) {
-        loading(false)
         const result = await response.text()
+
         if (response.redirected) {
             window.location.reload();
             return
@@ -44,8 +47,7 @@ async function loadBody(optional = "") {
 
         main.innerHTML = result
 
-        const selector = FORMS_ID.map(id => `#${id}`).join(',');
-        const forms = document.querySelectorAll(selector);
+        const forms = document.querySelectorAll("form");
 
         forms.forEach(form => {
             form.addEventListener("submit", async (e) => {
@@ -57,85 +59,154 @@ async function loadBody(optional = "") {
                 if (form.id == "generate-return") formData.append('mails', JSON.stringify(return_mails));
 
                 try {
-                    console.log(formData)
-                    
                     const response = await fetch(form.action, {
                         method: form.method,
                         body: formData
                     });
 
+                    const result = await response.json();
+
+                    loading(false)
+
                     if (response.ok) {
-                        const result = await response.json();
-
-                        loading(false)
-                        if (response.status == 200) {
-                            alert(result.Message)
-                        }
-
-                        if (response.status == 202) {
-                            let iframe = document.querySelector("iframe")
-                            if (!iframe) {
-                                iframe = document.createElement("iframe");
-                            }
-
-                            iframe.className = "hidden";
-                            document.body.appendChild(iframe);
-
-                            iframe.src = result.Message;
-
-                            iframe.onload = () => {
-                                iframe.contentWindow.focus();
-                                iframe.contentWindow.print();
-
-                                return_mails = {}
-
-                                loadBody()
-                            };
-                        }
-
                         form.querySelectorAll('input:not([type="hidden"]), textarea').forEach(input => input.value = '');
-
-                        if (form.id == "get-mail") {
-                            if (return_mails[result.Message[2]]) {
-                                alert("Erro: " + "Correspondencia já adicionada!");
-                            } else {
-                                return_mails[result.Message[2]] = {
-                                    'reason': 'Desconhecido',
-                                    'name': result.Message[1]
-                                };
-                                loadBody();
-                            }
-                            return
-                        }
-
-                        if (form.id == "extract-image" || form.id == "get-mail-exit") {
-                            loadBody(result.Message)
-                        }
-                    } else {
-                        const result = await response.json();
-                        loading(false)
-                        alert("Erro: " + result.Message);
                     }
+                    
+                    if (response.status == 201) {
+                        if (return_mails[result.Message[2]]) {
+                            alert("Correspondencia já adicionada!");
+                        } else {
+                            return_mails[result.Message[2]] = {
+                                'reason': 'Desconhecido',
+                                'name': result.Message[1]
+                            };
+                            loadBody();
+                        }
+                    } else if (response.status == 202) {
+                        let iframe = document.querySelector("iframe")
+                        if (!iframe) {
+                            iframe = document.createElement("iframe");
+                        }
+
+                        iframe.className = "hidden";
+                        document.body.appendChild(iframe);
+
+                        iframe.src = result.Message;
+
+                        iframe.onload = () => {
+                            iframe.contentWindow.focus();
+                            iframe.contentWindow.print();
+
+                            return_mails = {}
+
+                            loadBody()
+                        };
+                    } else {
+                        alert(result.Message);
+                    }
+
                 } catch (error) {
                     console.error(error);
-                    alert("Não foi possível conectar ao servidor.");
+                    alert("Erro interno no servidor.");
                 }
-            });
-        });
+            })
+        })
     } else {
-        loading(false)
         const result = await response.json()
         alert(result.Message);
     }
+}
+// const forms = document.querySelectorAll("form");
 
-};
+//         forms.forEach(form => {
+//             form.addEventListener("submit", async (e) => {
+//                 loading(true)
+//                 e.preventDefault();
+
+//                 const formData = new FormData(form);
+
+//                 if (form.id == "generate-return") formData.append('mails', JSON.stringify(return_mails));
+
+//                 try {
+//                     console.log(formData)
+
+//                     const response = await fetch(form.action, {
+//                         method: form.method,
+//                         body: formData
+//                     });
+
+//                     if (response.ok) {
+//                         const result = await response.json();
+
+//                         loading(false)
+//                         if (response.status == 200) {
+//                             alert(result.Message)
+//                         }
+
+//                         if (response.status == 202) {
+//                             let iframe = document.querySelector("iframe")
+//                             if (!iframe) {
+//                                 iframe = document.createElement("iframe");
+//                             }
+
+//                             iframe.className = "hidden";
+//                             document.body.appendChild(iframe);
+
+//                             iframe.src = result.Message;
+
+//                             iframe.onload = () => {
+//                                 iframe.contentWindow.focus();
+//                                 iframe.contentWindow.print();
+
+//                                 return_mails = {}
+
+//                                 loadBody()
+//                             };
+//                         }
+
+//                         form.querySelectorAll('input:not([type="hidden"]), textarea').forEach(input => input.value = '');
+
+//                         if (form.id == "get-mail") {
+//                             if (return_mails[result.Message[2]]) {
+//                                 alert("Erro: " + "Correspondencia já adicionada!");
+//                             } else {
+//                                 return_mails[result.Message[2]] = {
+//                                     'reason': 'Desconhecido',
+//                                     'name': result.Message[1]
+//                                 };
+//                                 loadBody();
+//                             }
+//                             return
+//                         }
+
+//                         if (form.id == "extract-image" || form.id == "get-mail-exit") {
+//                             loadBody(result.Message)
+//                         }
+//                     } else {
+//                         const result = await response.json();
+//                         loading(false)
+//                         alert("Erro: " + result.Message);
+//                     }
+//                 } catch (error) {
+//                     console.error(error);
+//                     alert("Não foi possível conectar ao servidor.");
+//                 }
+//             });
+//         });
+//     } else {
+//         loading(false)
+//         const result = await response.json()
+//         alert(result.Message);
+//     }
+
+// };
 
 const toggleHelpers = () => {
-    sidebarIsOpen = !sidebarIsOpen;
+    resume_helpersOpen = !resume_helpersOpen;
 
     const statsExtra = document.getElementById('stats-extra');
 
-    if (sidebarIsOpen) {
+    if (resume_helpersOpen) {
         statsExtra.classList.remove('opacity-0', 'translate-x-10', 'pointer-events-none', 'max-w-0');
         statsExtra.classList.add('opacity-100', 'translate-x-0', 'max-w-4xl');
     } else {

@@ -1,4 +1,3 @@
-import ast
 
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask import Flask, abort, request, jsonify, render_template, send_from_directory, session, redirect, url_for, flash, make_response
@@ -7,10 +6,12 @@ from flask_socketio import SocketIO
 from PIL import Image
 from functools import wraps
 from datetime import datetime
+from pathlib import Path
 
 import re
 import os
 import sys
+import ast
 import json
 import shutil
 import psutil
@@ -40,8 +41,7 @@ for process in psutil.process_iter(['pid', 'cmdline']):
 # ################################ #
 
 
-FOLDER = r"C:\Users\GUGA4\Documents\Projects\Sistema Almoxarifado\Sistema-Almoxarifado"
-# FOLDER = r"\\192.168.7.252\dados\OPERACOES\13-ALMOXARIFADO\0 - Sistema Almox"
+FOLDER = Path.cwd()
 
 sqlite = sqlite_core.init(FOLDER)
 
@@ -74,34 +74,6 @@ Socket = SocketIO(
     cors_allowed_origins="*"
 )
 
-# ################################ #
-#          Setting Global          #
-#            Variables             #
-# ################################ #
-
-
-# lastImage = ""
-
-# meses = {
-#     "01": "jan",
-#     "02": "fev",
-#     "03": "mar",
-#     "04": "abr",
-#     "05": "mai",
-#     "06": "jun",
-#     "07": "jul",
-#     "08": "ago",
-#     "09": "set",
-#     "10": "out",
-#     "11": "nov",
-#     "12": "dez"
-# }
-
-
-# ################################ #
-#        Defining Security         #
-#              Routes              #
-# ################################ #
 
 with app.app_context():
     print("> Server initiated successfully!")
@@ -219,16 +191,8 @@ def logout():
 def mails():
     user_role = session.get('user_role')
     allowed_tabs = users_db.getAllowedTabs(user_role)
-    forms_id = [
-        'register-mail',
-        'register-user',
-        'register-pickup',
-        'get-mail',
-        'generate-return',
-        'extract-image'
-    ]
 
-    return render_template("mails/mails.html", allowed_tabs=allowed_tabs, forms_id=forms_id)
+    return render_template("mails/mails.html", allowed_tabs=allowed_tabs)
 
 
 @app.route("/pictures/<path:filename>")
@@ -249,6 +213,8 @@ def render_body(tab_id):
                 tabs_list.append(tab.get("id"))
         else:
             raise Exception("Permissão negada!")
+
+        values = {}
 
         if tab_id in tabs_list:
             def is_delayed(entry_date_str: str, priority: str):
@@ -279,30 +245,43 @@ def render_body(tab_id):
                 return "/".join(dateStr.split(' ')[0].split('-')[::-1])
 
             def get_priority_class(priority: str):
-                color = "bg-red-500/30" if priority == "Judicial" else "bg-green-500/30"
-                return f"{color} rounded-full px-2 font-semibold pb-0.5"
+                    color = "bg-red-500/30" if priority == "Judicial" else "bg-green-500/30"
+                    return f"{color} rounded-full px-2 font-semibold pb-0.5"
 
-            values = {
-                "totals": mails_db.getTotals(),
-                "mails": mails_db.getMails(data[0], data[1], data[2]),
-                "is_delayed": is_delayed,
-                "format_date": format_date,
-                "get_priority_class": get_priority_class,
-                "filter": data[0],
-                "actualOrder": data[1],
-                "roles": users_db.getRoles(),
-                "users": users_db.getUsernames()
-            }
+            if tab_id == "resume":
+                values["totals"] = mails_db.getTotals()
+                values["mails"] = mails_db.getMails(data[0], data[1], data[2])
+                values["is_delayed"] = is_delayed
+                values["format_date"] = format_date
+                values["get_priority_class"] = get_priority_class
+                values["filter"] = data[0]
+                values["actualOrder"] = data[1]
+            elif tab_id == "registerPickup":
+                values["users"] = users_db.getUsernames()
+            elif tab_id == "generateReturn":
+                if data[3]:
+                    values["pre_return_mails"] = mails_db.getMails(data[3])
+                values["get_priority_class"] = get_priority_class
+                values["format_date"] = format_date
+            elif tab_id == "registerNewUser":
+                values["roles"] = users_db.getRoles()
+
+            # values = {
+
+
+            #     "roles": users_db.getRoles(),
+            #     "users": users_db.getUsernames()
+            # }
 
             
-            if data[3]:
-                values["pre_return_mails"] = mails_db.getMails(data[3])
-            elif data[4]:
-                values["exit"] = {
-                    'values': ast.literal_eval(data[4]),
-                    'mail': mails_db.getMails(ast.literal_eval(data[4])['ar_code'], fetchOne=True)
-                }
-
+            # if data[3]:
+            #     values["pre_return_mails"] = mails_db.getMails(data[3])
+            # elif data[4]:
+            #     values["exit"] = {
+            #         'values': ast.literal_eval(data[4]),
+            #         'mail': mails_db.getMails(ast.literal_eval(data[4])['ar_code'], fetchOne=True)
+            #     }
+            # 
             return render_template(f"tabs/{tab_id}.html", **values)
         else:
             raise Exception("Permissão negada!")
@@ -313,7 +292,7 @@ def render_body(tab_id):
 
 
 @app.route("/api/register-user", methods=["POST"])
-@roles_required
+@roles_required([""])
 def users_register():
     data = request.form
 
@@ -489,7 +468,7 @@ def extract_image():
         
         return jsonify({
             "Message": f"{values}"
-        }), 201
+        }), 200
     except Exception as e:
         return jsonify({
             "Message": f"Error: {e}"
