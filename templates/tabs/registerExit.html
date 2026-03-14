@@ -51,7 +51,7 @@
     </div>
 
     <div class="flex flex-col">
-        <form action="/api/get-mail-exit" method="post"
+        <form action="/mails-api/get-mail-exit" method="post"
             class="*:truncate *:overflow-hidden *:whitespace-nowrap grid-cols-[1cm_1fr_3.2cm_0.5fr_5.2cm_3.7cm_2.8cm]  duration-300 transition-colors grid gap-2 py-2 pr-2 border-b border-gray-700/50 hover:bg-default-main/15 items-center text-xs text-center *:text-ellipsis *:whitespace-nowrap *:overflow-hidden *:truncate">
             <span>{{id}}</span>
             <span class="text-start">{{name}}</span>
@@ -75,7 +75,7 @@
 
 {% else %}
 
-<form id="extract-image" action="/api/extract-image"
+<form id="extract-image" action="/mails-api/extract-image"
     class="w-full flex flex-col space-y-4 items-center row-span-2 self-center justify-self-center" method="post">
     <div onclick="document.getElementById('file_input').click();" ondragover="
                 event.preventDefault();

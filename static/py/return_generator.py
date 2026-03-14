@@ -1,4 +1,6 @@
 import os
+import random
+import string
 import subprocess
 
 from docx import Document
@@ -27,7 +29,26 @@ class init:
         return "/static/files/devolucao.pdf"
     
     def generate_return(self, data: dict, username: str):
+        tmp_name = ''.join(random.choices(
+            (string.ascii_letters + string.digits), k=16))
+                
         doc = Document(self.path / "static" / "files" / "template.docx")
+
+        for paragraph in doc.paragraphs:
+            if "ID: {{ IDCODE }}" in paragraph.text:
+                # Replace and make ID bold
+                paragraph.text = paragraph.text.replace("ID: {{ IDCODE }}", "ID: ")
+                run = paragraph.add_run(tmp_name)
+                run.bold = True
+
+        for table in doc.tables:
+            for row in table.rows:
+                for cell in row.cells:
+                    for paragraph in cell.paragraphs:
+                        if "ID: {{ IDCODE }}" in paragraph.text:
+                            paragraph.text = paragraph.text.replace("ID: {{ IDCODE }}", "ID: ")
+                            run = paragraph.add_run(tmp_name)
+                            run.bold = True
 
         table = doc.tables[0]
 
@@ -88,4 +109,4 @@ class init:
         converted = self.convertPDF(docpath)
         os.remove(docpath)        
         
-        return converted
+        return converted, tmp_name

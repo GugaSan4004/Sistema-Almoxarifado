@@ -1,15 +1,20 @@
+import os
 import re
+import shutil
 import sqlite3
 import unicodedata
-from rapidfuzz import fuzz
 
-from datetime import datetime, date
+from rapidfuzz import fuzz
+from datetime import datetime
 
 
 class init:
     def __init__(self, folder) -> None:
-        self.connector = sqlite3.connect(
-            folder / 'almoxarifado.sqlite', check_same_thread=False)
+        db_path = folder / 'db.sqlite'
+        if not os.path.exists(db_path):
+            shutil.copyfile(folder / '.sqltemplate', folder /  'db.sqlite')
+        self.connector = sqlite3.connect(db_path, check_same_thread=False)
+        self.folder = folder
 
     class mails:
         def __init__(self, parent: "init") -> None:
@@ -18,31 +23,21 @@ class init:
                 "ASC",
                 "DESC"
             ]
+            self.folder = parent.folder
 
-        # def updatePicture(self, receive_name, receive_date, photo_id, code, status):
-        #     cur = self.connection.cursor()
-        #     try:
-        #         cur.execute(
-        #             "UPDATE mails SET receive_name = ?, receive_date = ?, photo_id = ?, status = ? WHERE code = ?",
-        #             (receive_name.title(), receive_date, photo_id, status, code.upper())
-        #         )
-        #         self.connection.commit()
-        #     except Exception as e:
-        #         print(e)
-        #     cur.close()
+        def updateMail(self, username: str, code: str, detail: str, date: str, pictureId: str, temp_pictureId: str) -> None:
+            cur = self.connection.cursor()
 
-        # def updateReceiver(self, code, receiver, sender):
-        #     cur = self.connection.cursor()
-        #     try:
-        #         cur.execute(
-        #             "UPDATE mails SET ReceivedOnReceptionBy = ?, SendedOnReceptionBy = ?, LeaveReceptionAt = ?, status = 'almox' WHERE code = ?",
-        #             (receiver, sender, str(datetime.now().strftime("%d-%m-%Y %H:%M")), code.upper())
-        #         )
-        #         self.connection.commit()
-        #     except Exception as e:
-        #         print(e)
+            shutil.move(self.folder / 'pictures' / 'temp' / f'{temp_pictureId}.jpg', self.folder / 'pictures' / 'mails' / f'{pictureId}.jpg')
 
-        #     cur.close()
+            cur.execute(
+                "UPDATE mails SET status = 'shipped', deliveryDetail = ?, deliveredAt = ?, deliveredBy = ?, pictureId = ? WHERE code = ?",
+                (detail.title(), date, username, pictureId.upper(), code.upper())
+            )
+
+            self.connection.commit()
+
+            cur.close()
 
         def registerPickup(self, code: str, pickupuser: str, responsableuser: str) -> None:
             cur = self.connection.cursor()
@@ -166,7 +161,8 @@ class init:
                             f"SELECT * FROM mails WHERE code = ?",
                             (mailCode,)
                         )
-                        correspondences.append(cur.fetchone() + (returnReason['reason'],))
+                        correspondences.append(
+                            cur.fetchone() + (returnReason['reason'],))
                     cur.close()
                     return correspondences
                 else:
@@ -304,12 +300,18 @@ class init:
             self.connection.commit()
             cur.close()
 
-        def changePassword(self, password: str, userid: str, username: str) -> None:
+        def changePassword(self, password: str, userid: str, username: str) -> bool:
             cur = self.connection.cursor()
+            cur.execute("SELECT id, name FROM users WHERE id = ? AND name = ?", (userid, username.title()))
+            row = cur.fetchone()
+            if not row:
+                cur.close()
+                return False
             cur.execute("UPDATE users set password = ?, changepass = 0 WHERE id = ? AND name = ?",
                         (password, userid, username.title()))
             self.connection.commit()
             cur.close()
+            return True
 
         def getRoles(self) -> list | None:
             cur = self.connection.cursor()

@@ -16,7 +16,7 @@ window.onload = function () {
         document.getElementById("your-pass").innerHTML = "Repetir Nova senha"
 
         const form = document.querySelector("form")
-        form.action = "api/set-userpass"
+        form.action = "mails-api/set-userpass"
         form.innerHTML = `
                 <h1 class="font-bold text-4xl">Primeiro Login</h1>
                 <input class="duration-300 transition-colors rounded-sm border border-gray-300 focus:ring-2 focus:ring-default-main 0 bg-gray-200 h-11 w-11/15 px-4" required minlength="6" placeholder="Senha" name="password" id="pwd"

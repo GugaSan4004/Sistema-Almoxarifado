@@ -1,8 +1,6 @@
 import os
 import io
 
-from pdf2image import convert_from_path
-
 from azure.core.credentials import AzureKeyCredential
 
 class init:
@@ -29,54 +27,41 @@ class init:
             credential=AzureKeyCredential(TKEY)
         )
 
-    def load_image(self, img_path: str):
-        if img_path.lower().endswith(".pdf"):
-            pages = convert_from_path(img_path, dpi=200)
-            temp_img = img_path.replace(".pdf", "_page1.jpg")
-            pages[0].save(temp_img, "JPEG")
-            return temp_img
-
-        return img_path
-
     def extractInfo(self, path):
-        # path = self.load_image(path)
+        with io.open(path, "rb") as img_file:
+            content = img_file.read()
 
-        # with io.open(path, "rb") as img_file:
-        #     content = img_file.read()
+        result = self.ocrClient.analyze(
+            image_data=content,
+            visual_features=[self.VisualFeatures.READ]
+        )
 
-        # result = self.ocrClient.analyze(
-        #     image_data=content,
-        #     visual_features=[self.VisualFeatures.READ]
-        # )
+        text = ""
+        lines = []
 
-        # text = ""
-        # lines = []
+        if result.read is not None:
+            for block in result.read.blocks:
+                for line in block.lines:
+                    text += " " + line.text
+                    lines.append(line.text)
 
-        # if result.read is not None:
-        #     for block in result.read.blocks:
-        #         for line in block.lines:
-        #             text += " " + line.text
-        #             lines.append(line.text)
+        def chunk_list(lst, size=5):
+            for i in range(0, len(lst), size):
+                yield lst[i:i + size]
 
-        # def chunk_list(lst, size=5):
-        #     for i in range(0, len(lst), size):
-        #         yield lst[i:i + size]
+        names = []
 
-        # names = []
+        for batch in chunk_list(lines, 5):
+            lt = " ".join(batch)
 
-        # for batch in chunk_list(lines, 5):
-        #     lt = " ".join(batch)
+            response = self.textClient.recognize_entities(
+                documents=[lt],
+                language="pt"
+            )
 
-        #     response = self.textClient.recognize_entities(
-        #         documents=[lt],
-        #         language="pt"
-        #     )
-
-        #     for doc in response:
-        #         for ent in doc.entities:
-        #             # ent.category == "PersonType" or
-        #             if (ent.category == "Person") and ent.confidence_score >= 0.65:
-        #                 names.append(ent.text)
-        text = "AB123456789BR 19/04/2006"
-        names = ["Gustavo Ribeiro"]
+            for doc in response:
+                for ent in doc.entities:
+                    # ent.category == "PersonType" or
+                    if (ent.category == "Person") and ent.confidence_score >= 0.65:
+                        names.append(ent.text)
         return [text, names]

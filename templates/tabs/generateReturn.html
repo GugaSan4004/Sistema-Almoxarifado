@@ -6,7 +6,7 @@
                 d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
         </svg>
     </span>
-    <form class="w-full" action="/api/get-mail" method="post" id="get-mail">
+    <form class="w-full" action="/mails-api/get-mail" method="post" id="get-mail">
         <input
             class="block w-full rounded-sm px-10 py-2 border border-gray-300 leading-5 bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-default-main focus:border-default-main sm:text-sm transition duration-300 ease-in-out"
             placeholder="Buscar por código AR..." name="code" type="search" value="" required>
@@ -14,7 +14,7 @@
     </form>
 </div>
 
-<form class="-row-start-2 mr-4 mb-3 self-end justify-self-end" action="/api/generate-return" method="post"
+<form class="-row-start-2 mr-4 mb-3 self-end justify-self-end" action="/mails-api/generate-return" method="post"
     id="generate-return">
     <button type="submit" {{ '' if pre_return_mails else 'disabled' }}
         class="h-9.5 disabled:bg-default-main/40 enabled:hover:text-default-secondary bg-default-main enabled:text-white disabled:text-black cursor-pointer md:w-80 text-center active:scale-95 transition-all rounded-sm">
