@@ -14,6 +14,7 @@ import json
 import psutil
 import random
 import string
+import shutil
 import secrets
 
 current_pid = sys.argv[0]
@@ -444,8 +445,22 @@ def register_exit():
         if not picture_id or not date or not people:
             raise Exception("Valores insuficientes!")
 
-        mails_db.updateMail(session.get('user_name'),
-                            code, people, date, picture_id, temp_pictureId)
+        shutil.move(FOLDER / 'pictures' / 'temp' /
+                    f'{temp_pictureId}.jpg', FOLDER / 'pictures' / 'mails' / f'{picture_id}.jpg')
+
+        setClau = {
+            'status': 'shipped',
+            'deliveryDetail': people.title(),
+            'deliveredAt': datetime.strptime(date, "%Y-%m-%d"),
+            'deliveredBy': session.get('user_name'),
+            'pictureId': picture_id.upper()
+        }
+
+        whereClau = {
+            'code': code.upper()
+        }
+
+        mails_db.updateMail(setClau, whereClau)
 
         return jsonify({
             "Message": "Registrado com sucesso!"
@@ -461,15 +476,33 @@ def register_exit():
 def generate_return():
     data = request.form
 
-    _dict = json.loads(data['mails'])
+    try:
+        _dict: dict = json.loads(data['mails'])
 
-    pdf_path, token = returnGen.generate_return(_dict, session.get('user_name'))
+        token = returnGen.generate_return(_dict, session.get('user_name'))
 
+        for code, info in _dict.items():
+            setClau = {
+                'status': 'pre_returned',
+                'deliveryDetail': info.get('reason', 'Desconhecido').title(),
+                'deliveredBy': session.get('user_name'),
+                'pictureId': token
+            }
 
+            whereClau = {
+                'code': code
+            }
 
-    return jsonify({
-        "Message": pdf_path
-    }), 202
+            mails_db.updateMail(setClau, whereClau)
+
+        return jsonify({
+            "Message": token
+        }), 202
+
+    except Exception as e:
+        return jsonify({
+            "Message": f"{e}"
+        }), 400
 
 
 @app.route("/mails-api/extract-image", methods=["POST"])
@@ -503,10 +536,11 @@ def extract_image():
         return datetime.now().strftime('%Y-%m-%d')
 
     try:
-        file = request.files["image"]
-
         tmp_name = ''.join(random.choices(
             (string.ascii_letters + string.digits), k=16))
+        
+        file = request.files["image"]
+
 
         tmp_path = FOLDER / "pictures" / "temp" / f"{tmp_name}.jpg"
 
@@ -521,23 +555,72 @@ def extract_image():
 
         result_format = str(extraction[0]).upper().replace(" ", "")
 
-        raw_date_match = re.search(
-            r'(?:DOCUMENTO|DATA)\s*:\s*([0-9Iil\/]{6,10})', result_format, re.IGNORECASE)
-        raw_date_str = raw_date_match.group(1) if raw_date_match else None
+        if "TERMODEDEVOLUCAOAOSCORREIOS" in result_format.replace("Ç", "C").replace("Ã", "A"):
+            token_match = re.search(r'ID:\s*([^\s]+)', extraction[0])
+            extracted_token = token_match.group(1) if token_match else ""
 
-        code = re.search(r'([A-Z]{2}\d{9}[A-Z]{2})', result_format).group(0)
-        values = {
-            "tmp_id": tmp_name,
-            "fetched_code": code,
-            "date": fix_and_format_date(raw_date_str),
-            "potential_people": extraction[1],
-            "mail": mails_db.getMails(code, fetchOne=True)
-        }
+            mails = mails_db.getMails(mail_filter=extracted_token)
 
-        return jsonify({
-            "Message": f"{render_template("tabs/exitValues.html", **values)}"
-        }), 203
+            if mails:
+                for mail in mails:
+                    id = mail[0]
+                    status = mail[11]
+                    _type = mail[4]
+                    code = mail[2]
+
+                    if status != "pre_returned":
+                        raise Exception(
+                            "Correspondencia divergente encontrada! Registro cancelado, algumas correspondencias podem ja ter sido alteradas!")
+
+                    new_id = _type[:3].upper() + code[-5:] + str(id)
+
+                    setClau = {
+                        'status': 'returned',
+                        'deliveredAt': datetime.now().strftime("%Y-%m-%d %H:%M"),
+                        'pictureId': new_id
+                    }
+
+                    whereClau = {
+                        'pictureId': extracted_token
+                    }
+
+                    mails_db.updateMail(setClau, whereClau)
+
+                    shutil.copyfile(FOLDER / 'pictures' / 'temp' /
+                        f'{tmp_name}.jpg', FOLDER / 'pictures' / 'mails' / f'{new_id}.jpg')
+                
+                (FOLDER / 'pictures' / 'temp' / f'{tmp_name}.jpg').unlink(missing_ok=True)
+                (FOLDER / 'pictures' / 'temp' / f'{extracted_token}.jpg').unlink(missing_ok=True)
+
+                return jsonify({
+                    "Message": "Devolução registrada com sucesso"
+                }), 200
+            else:
+                raise Exception(f"Nenhuma devolução pendente corresponde a esse documento!")
+        else:
+            raw_date_match = re.search(
+                r'(?:DOCUMENTO|DATA)\s*:\s*([0-9Iil\/]{6,10})', result_format, re.IGNORECASE)
+            raw_date_str = raw_date_match.group(1) if raw_date_match else None
+
+            code = re.search(r'([A-Z]{2}\d{9}[A-Z]{2})',
+                             result_format).group(0)
+
+            mail = mails_db.getMails(code, fetchOne=True)
+
+            values = {
+                "tmp_id": tmp_name,
+                "fetched_code": code,
+                "date": fix_and_format_date(raw_date_str),
+                "potential_people": extraction[1],
+                "mail": mail if mail[11] == "almox" else None
+            }
+
+            return jsonify({
+                "Message": f"{render_template("tabs/exitValues.html", **values)}"
+            }), 203
     except Exception as e:
+        (FOLDER / 'pictures' / 'temp' / f'{tmp_name}.jpg').unlink(missing_ok=True)
+
         return jsonify({
             "Message": f"Error: {e}"
         }), 400

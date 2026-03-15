@@ -1,4 +1,5 @@
-pictures/
+pictures/temp/*
+pictures/mails/*
 api-key/
 __pycache__/*
 __pycache__*

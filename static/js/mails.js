@@ -74,7 +74,7 @@ const bindForms = (root = document) => {
                     iframe.className = "hidden";
                     document.body.appendChild(iframe);
 
-                    iframe.src = result.Message;
+                    iframe.src = `/pictures/temp/${result.Message}.pdf`;
 
                     iframe.onload = () => {
                         iframe.contentWindow.focus();

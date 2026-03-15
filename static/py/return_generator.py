@@ -26,8 +26,6 @@ class init:
             "--outdir", output_dir
         ], check=True)
 
-        return "/static/files/devolucao.pdf"
-    
     def generate_return(self, data: dict, username: str):
         tmp_name = ''.join(random.choices(
             (string.ascii_letters + string.digits), k=16))
@@ -36,19 +34,22 @@ class init:
 
         for paragraph in doc.paragraphs:
             if "ID: {{ IDCODE }}" in paragraph.text:
-                # Replace and make ID bold
-                paragraph.text = paragraph.text.replace("ID: {{ IDCODE }}", "ID: ")
-                run = paragraph.add_run(tmp_name)
+                paragraph.text = paragraph.text.replace("ID: {{ IDCODE }}", "")
+                run = paragraph.add_run("ID: ")
                 run.bold = True
+                run2 = paragraph.add_run(tmp_name)
+                run2.bold = True
 
         for table in doc.tables:
             for row in table.rows:
                 for cell in row.cells:
                     for paragraph in cell.paragraphs:
                         if "ID: {{ IDCODE }}" in paragraph.text:
-                            paragraph.text = paragraph.text.replace("ID: {{ IDCODE }}", "ID: ")
-                            run = paragraph.add_run(tmp_name)
+                            paragraph.text = paragraph.text.replace("ID: {{ IDCODE }}", "")
+                            run = paragraph.add_run("ID: ")
                             run.bold = True
+                            run2 = paragraph.add_run(tmp_name)
+                            run2.bold = True
 
         table = doc.tables[0]
 
@@ -103,10 +104,10 @@ class init:
 
         p.alignment = WD_ALIGN_PARAGRAPH.RIGHT
             
-        docpath = self.path / "static" / "files" / "devolucao.docx"
+        docpath = self.path / "pictures" / "temp" / f"{tmp_name}.docx"
         
         doc.save(docpath)
-        converted = self.convertPDF(docpath)
+        self.convertPDF(docpath)
         os.remove(docpath)        
         
-        return converted, tmp_name
+        return tmp_name

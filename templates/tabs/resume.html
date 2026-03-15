@@ -79,7 +79,7 @@
         {% set row_class = "" %}
         {% set row_title = "" %}
 
-        {% if status == "returned" %}
+        {% if status == "returned" or status == "pre_returned" %}
         {% set row_class = "text-stone-500" %}
         {% elif status == "casualty" %}
         {% set row_class = "text-pink-600" %}
@@ -105,7 +105,7 @@
             <span>{{ type }}</span>
             <span class="{{ get_priority_class(priority) }}">{{ priority }}</span>
             <span>{{ format_date(entryDate) }}</span>
-            <span>{{ receiverName if receiverName else "---" }}</span>
+            <span>{{ receiverName if receiverName and status != "pre_returned" else "---" }}</span>
             <span>{{ format_date(exitDate) if exitDate else "---" }}</span>
 
             <span 
@@ -131,7 +131,7 @@
                 "
 
                 class="rounded-sm duration-300 transition-colors cursor-pointer bg-gray-600/20 hover:bg-default-main hover:text-white py-1"
-                {% if photoId %} data-img="/pictures/mails/{{ photoId }}.jpg"> {{ photoId }}
+                {% if photoId and status != "pre_returned" %} data-img="/pictures/mails/{{ photoId }}.jpg"> {{ photoId }}
                 {% else %}
                 > ---
                 {% endif %}

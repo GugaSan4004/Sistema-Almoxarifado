@@ -12,7 +12,7 @@ class init:
     def __init__(self, folder) -> None:
         db_path = folder / 'db.sqlite'
         if not os.path.exists(db_path):
-            shutil.copyfile(folder / '.sqltemplate', folder /  'db.sqlite')
+            shutil.copyfile(folder / '.sqltemplate', folder / 'db.sqlite')
         self.connector = sqlite3.connect(db_path, check_same_thread=False)
         self.folder = folder
 
@@ -25,16 +25,27 @@ class init:
             ]
             self.folder = parent.folder
 
-        def updateMail(self, username: str, code: str, detail: str, date: str, pictureId: str, temp_pictureId: str) -> None:
+        def updateMail(self, values: dict, search: dict, search_logic: str = "AND") -> None:
             cur = self.connection.cursor()
 
-            shutil.move(self.folder / 'pictures' / 'temp' / f'{temp_pictureId}.jpg', self.folder / 'pictures' / 'mails' / f'{pictureId}.jpg')
+            set_clause = ", ".join([f"{k} = ?" for k in values.keys()])
+            set_values = list(values.values())
 
-            cur.execute(
-                "UPDATE mails SET status = 'shipped', deliveryDetail = ?, deliveredAt = ?, deliveredBy = ?, pictureId = ? WHERE code = ?",
-                (detail.title(), date, username, pictureId.upper(), code.upper())
-            )
+            where_clause = ""
+            where_values = []
 
+            if search:
+                logic = search_logic.upper()
+
+            if logic not in ["AND", "OR"]:
+                logic = "AND"
+
+            where_clause = " WHERE " + f" {logic} ".join([f"{k} = ?" for k in search.keys()])
+            where_values = list(search.values())
+
+            sql = f"UPDATE mails SET {set_clause}{where_clause}"
+            cur.execute(sql, set_values + where_values)
+                
             self.connection.commit()
 
             cur.close()
@@ -61,7 +72,7 @@ class init:
                             responsableuser,
                             "almox",
                             datetime.now().strftime("%Y-%m-%d %H:%M"),
-                            code
+                            code.upper()
                         )
                         )
             self.connection.commit()
@@ -154,6 +165,14 @@ class init:
                     cur.execute(
                         f"SELECT * FROM mails WHERE((priority = 'Simples' AND (julianday('now') - julianday(joinDate || ':00')) * 24 >= 120) OR ( priority = 'Judicial' AND (julianday('now') - julianday(joinDate || ':00')) * 24 >= 72)) AND (status = 'almox' OR status = 'reception') ORDER BY {orderBy} {orderDirection}",
                     )
+                elif mail_filter == "returned":
+                    cur.execute(
+                        f"SELECT * FROM mails WHERE status = ? OR status = ? ORDER BY {orderBy} {orderDirection}",
+                        (
+                            "returned",
+                            "pre_returned"
+                        )
+                    )
                 elif type(mail_filter) == dict:
                     correspondences = []
                     for mailCode, returnReason in mail_filter.items():
@@ -207,7 +226,7 @@ class init:
             for status, join_date, priority in rows:
                 total += 1
 
-                if status == "returned":
+                if status == "returned" or status == "pre_returned":
                     returned += 1
                 elif status == "shipped":
                     shipped += 1
@@ -302,7 +321,8 @@ class init:
 
         def changePassword(self, password: str, userid: str, username: str) -> bool:
             cur = self.connection.cursor()
-            cur.execute("SELECT id, name FROM users WHERE id = ? AND name = ?", (userid, username.title()))
+            cur.execute(
+                "SELECT id, name FROM users WHERE id = ? AND name = ?", (userid, username.title()))
             row = cur.fetchone()
             if not row:
                 cur.close()
