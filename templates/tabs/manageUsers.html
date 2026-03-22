@@ -1,0 +1,46 @@
+<form action="/mails-api/manageUsers" method="post"
+    class="p-8 bg-white rounded-xl shadow-lg overflow-hidden border-t-4 border-default-main row-span-2 w-[40vmax] self-center h-[30vmax] gap-x-3 justify-self-center grid *:w-full *:mb-8">
+    <h2 class="text-3xl! col-span-2 mt-8 font-bold text-center text-default-main">Gerenciar Usuario</h2>
+    <div class="col-span-2">
+        <label class="block font-semibold text-gray-600 mb-1">Nome do Usuario</label>
+        <select onchange="this.form.requestSubmit()"
+            class="rounded-sm w-full px-4 py-2 border border-gray-300 focus:ring-2 focus:ring-default-main focus:border-transparent outline-none transition-all"
+            name="username">
+            <option {{ '' if selected_user else 'selected' }} disabled>Selecione um Usuario</option>
+            {% for user in users %}
+            {% if user[0] != username_session %}
+            <option {{ 'selected' if selected_user==user[0] else '' }} value="{{user[0]}}">{{user[0]}}</option>
+            {% endif %}
+            {% endfor %}
+        </select>
+    </div>
+    {% if userdata %}
+    <div>
+        <label class="block font-semibold text-gray-600 mb-1">Cargo do Usuario</label>
+        <select required name="role"
+            class="rounded-sm w-full px-4 py-2 border border-gray-300 focus:ring-2 focus:ring-default-main outline-none appearance-none bg-white">
+            {% for role in roles %}
+            <option {{ 'selected' if userdata['role']==role[0] else '' }} value="{{ role[0] }}">{{ role[0] | title }}
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+    <div>
+        <label class="block font-semibold text-gray-600 mb-1">Status da Conta</label>
+        <select required name="status"
+            class="rounded-sm w-full px-4 py-2 border border-gray-300 focus:ring-2 focus:ring-default-main outline-none appearance-none bg-white">
+            <option {{ 'selected' if userdata['status'] < 0 else '' }} value="-2">Desabilitada</option>
+            <option {{ 'selected' if userdata['status']==0 else '' }} value="0">Ativa</option>
+            <option {{ 'selected' if userdata['status']==1 else '' }} value="1">Mudança de Senha</option>
+        </select>
+    </div>
+    {% endif %}
+
+    <input id="sub" hidden name="submit" value="" type="text">
+
+    <button {{ 'onclick=document.getElementById("sub").value="True";' if userdata else "" }} {{'' if userdata
+        else 'disabled' }} type="submit"
+        class="col-span-2 disabled:bg-default-main/40 enabled:hover:text-default-secondary enabled:text-white cursor-pointer disabled:text-black rounded-sm h-11 w-full bg-default-main text-white font-bold py-3 shadow-md transform active:scale-95 transition-all uppercase tracking-wide mt-4">Atualizar
+        Cadastro</button>
+
+</form>

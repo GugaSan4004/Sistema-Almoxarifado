@@ -13,7 +13,7 @@
 <img src="/pictures/temp/{{ tmp_id }}.jpg" alt="Preview"
     class="hover:scale-105 transition-all cursor-pointer h-[50vh] w-[30vh] m-8 mx-auto rounded-sm shadow-lg border border-slate-200 justify-self-center">
 
-<form method="post" action="/mails-api/register-exit" id="register-mail-exit"
+<form method="post" action="/mails-api/registerExit"
     class="flex mx-4 mb-4 items-end justify-between self-end h-max">
     <button onclick=" 
         document.getElementById('sub_people').value = document.getElementById('inp_people').value
@@ -26,6 +26,7 @@
     <input type="hidden" id="sub_date" name="date" value="">
     <input type="hidden" name="picture_id" value="{{ picid }}">
     <input type="hidden" name="tmp_picture_id" value="{{ tmp_id }}">
+    <input type="hidden" name="final_submit" value="true">
 </form>
 
 <div
@@ -42,7 +43,7 @@
     </div>
 
     <div class="flex flex-col">
-        <form method="post" action="/mails-api/exit-values"
+        <form method="post" action="/mails-api/registerExit"
             class="*:truncate *:overflow-hidden *:whitespace-nowrap grid-cols-[1cm_1fr_3.2cm_0.5fr_5.2cm_3.7cm_2.8cm]  duration-300 transition-colors grid gap-2 py-2 pr-2 border-b border-gray-700/50 hover:bg-default-main/15 items-center text-xs text-center *:text-ellipsis *:whitespace-nowrap *:overflow-hidden *:truncate">
             <span>{{id}}</span>
             <span class="text-start">{{name}}</span>

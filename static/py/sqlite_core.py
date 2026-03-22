@@ -78,7 +78,7 @@ class init:
             self.connection.commit()
             cur.close()
 
-        def registerNewMail(self, sender: str, code: str, fantasy: str, type_: str, priority: str, username: str):
+        def registerNewMail(self, sender: str, code: str, fantasy: str, _type: str, priority: str, username: str):
             cur = self.connection.cursor()
 
             def normalize(text):
@@ -127,6 +127,15 @@ class init:
 
                 if best_score >= threshold:
                     fantasy = best_fantasy
+                else:
+                    fantasy = "---"
+            
+            if _type.title() not in ["Carta", "Caixa", "Pacote"]:
+                raise Exception("Tipo de correspondencia invalida!")
+
+            if priority.title() not in ["Simples", "Judicial"]:
+                raise Exception("Prioridade de correspondencia invalida!")
+
 
             cur.execute("""
                 INSERT INTO mails (name, code, fantasy, type, priority, joinDate, registeredBy)
@@ -135,7 +144,7 @@ class init:
                 sender.title(),
                 code.upper(),
                 fantasy.title(),
-                type_.title(),
+                _type.title(),
                 priority.title(),
                 datetime.now().strftime("%Y-%m-%d %H:%M"),
                 username.title()
@@ -146,7 +155,7 @@ class init:
             cur.close()
             return None
 
-        def getMails(self, mail_filter: str | dict = "", orderBy: str = "", orderDirection: str = "ASC", fetchOne: bool = False) -> list:
+        def getMails(self, mail_filter: str | dict = "", orderBy: str = "", orderDirection: str = "ASC", fetchOne: bool = False, column: str = "") -> list:
             cur = self.connection.cursor()
 
             if orderDirection not in self.AllowedOrderDirection:
@@ -175,29 +184,34 @@ class init:
                     )
                 elif type(mail_filter) == dict:
                     correspondences = []
-                    for mailCode, returnReason in mail_filter.items():
+                    for mailCode, reason in mail_filter.items():
                         cur.execute(
                             f"SELECT * FROM mails WHERE code = ?",
                             (mailCode,)
                         )
-                        correspondences.append(
-                            cur.fetchone() + (returnReason['reason'],))
+                        correspondences.append(cur.fetchone() + (reason,))
                     cur.close()
                     return correspondences
                 else:
-                    cur.execute(
-                        f"SELECT * FROM mails WHERE code LIKE ? OR name LIKE ? OR fantasy LIKE ? OR pictureId LIKE ? OR deliveryDetail LIKE ? OR status = ? OR type LIKE ? OR priority LIKE ? ORDER BY {orderBy} {orderDirection}",
-                        (
-                            "%" + mail_filter + "%",
-                            "%" + mail_filter + "%",
-                            "%" + mail_filter + "%",
-                            "%" + mail_filter + "%",
-                            "%" + mail_filter + "%",
-                            mail_filter,
-                            "%" + mail_filter.title() + "%",
-                            "%" + mail_filter.title() + "%"
+                    if column != "":
+                        cur.execute(
+                            f"SELECT * FROM mails WHERE {column} = ? ORDER BY {orderBy} {orderDirection}",
+                            (mail_filter,)
                         )
-                    )
+                    else:
+                        cur.execute(
+                            f"SELECT * FROM mails WHERE code LIKE ? OR name LIKE ? OR fantasy LIKE ? OR pictureId LIKE ? OR deliveryDetail LIKE ? OR status = ? OR type LIKE ? OR priority LIKE ? ORDER BY {orderBy} {orderDirection}",
+                            (
+                                "%" + mail_filter + "%",
+                                "%" + mail_filter + "%",
+                                "%" + mail_filter + "%",
+                                "%" + mail_filter + "%",
+                                "%" + mail_filter + "%",
+                                mail_filter,
+                                "%" + mail_filter.title() + "%",
+                                "%" + mail_filter.title() + "%"
+                            )
+                        )
             else:
                 cur.execute(
                     f"SELECT * FROM mails ORDER BY {orderBy} {orderDirection}")
@@ -272,22 +286,31 @@ class init:
         def __init__(self, parent: "init") -> None:
             self.connection: sqlite3.Connection = parent.connector
 
-        def getUserData(self, param: str) -> list | None:
+        def getUserData(self, name: str = None, id: str = None) -> list | None:
             cur = self.connection.cursor()
 
-            cur.execute("SELECT * FROM users WHERE name LIKE ? or id = ?",
-                        (param.title() + "%" if type(param) == str else param, param))
+            if name and id:
+                cur.execute("SELECT * FROM users WHERE name LIKE ? OR id = ?", (name.title() + "%", id))
+            elif name:
+                cur.execute("SELECT * FROM users WHERE name LIKE ?", (name.title() + "%",))
+            elif id:
+                cur.execute("SELECT * FROM users WHERE id = ?", (id,))
+            else:
+                cur.close()
+                return None 
 
             result = cur.fetchone()
-
             cur.close()
 
             return result
 
-        def getUsernames(self) -> list:
+        def getUsernames(self, inactives: bool = True) -> list:
             cur = self.connection.cursor()
 
-            cur.execute("SELECT name FROM users")
+            if inactives:
+                cur.execute("SELECT name FROM users")
+            else:
+                cur.execute("SELECT name FROM users WHERE status != -2")
 
             result = cur.fetchall()
 
@@ -311,23 +334,23 @@ class init:
 
             return allowed_tabs
 
-        def registerNewUser(self, username: str, role: str) -> None:
+        def registerNewUser(self, username: str, password: str) -> None:
             cur = self.connection.cursor()
 
-            cur.execute("INSERT INTO users (name, role) VALUES (?, ?)",
-                        (username.title(), role.lower()))
+            cur.execute("INSERT INTO users (name, password) VALUES (?, ?)",
+                (username.title(), password)
+            )
             self.connection.commit()
             cur.close()
 
         def changePassword(self, password: str, userid: str, username: str) -> bool:
             cur = self.connection.cursor()
-            cur.execute(
-                "SELECT id, name FROM users WHERE id = ? AND name = ?", (userid, username.title()))
+            cur.execute("SELECT id, name FROM users WHERE id = ? AND name = ?", (userid, username.title()))
             row = cur.fetchone()
             if not row:
                 cur.close()
                 return False
-            cur.execute("UPDATE users set password = ?, changepass = 0 WHERE id = ? AND name = ?",
+            cur.execute("UPDATE users set password = ?, status = 0 WHERE id = ? AND name = ?",
                         (password, userid, username.title()))
             self.connection.commit()
             cur.close()
@@ -343,3 +366,31 @@ class init:
             cur.close()
 
             return result
+        
+        def updateUser(self, id: str, name: str, role: str = None, status: int = None) -> None:
+            # -2: Disabled
+            # -1: New Account
+            # 0: Normal
+            # 1: Change Password
+
+            cur = self.connection.cursor()
+
+            set_parts = []
+            values = []
+
+            if role is not None:
+                set_parts.append("role = ?")
+                values.append(role.lower())
+
+            if status is not None:
+                set_parts.append("status = ?")
+                values.append(status)
+
+            if set_parts:
+                set_clause = ", ".join(set_parts)
+                sql = f"UPDATE users SET {set_clause} WHERE id = ? AND name = ?"
+                values.extend([id, name])
+                cur.execute(sql, values)
+
+            self.connection.commit()
+            cur.close()

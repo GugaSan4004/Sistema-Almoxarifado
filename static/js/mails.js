@@ -1,15 +1,14 @@
 // const ALLOWED_TABS FORMS_ID
-let main = ""
-let sidebar = ""
-let actualTabId = "resume"
+let actualTabId = "resume";
 
+let URLParams = {};
+
+let resume_lastFilter = "";
 let resume_helpersOpen = true;
-let resume_lastFilter = ""
-let resume_lastOrderBy = "id"
-let resume_orderDirection = "DESC"
-let resume_hoverTimeout
+let resume_lastOrderBy = "id";
+let resume_orderDirection = "DESC";
 
-let return_mails = {}
+let return_data = {};
 
 const loading = (on) => {
     const overlay = document.getElementById('overlay')
@@ -17,98 +16,126 @@ const loading = (on) => {
 
     if (on) {
         document.querySelector('body').setAttribute('inert', '');
-        overlay.classList.remove('hidden');
-        message.classList.remove('hidden');
+        overlay.hidden = false;
+        message.hidden = false;
     } else {
         document.querySelector('body').removeAttribute('inert');
-        overlay.classList.add('hidden');
-        message.classList.add('hidden');
+        overlay.hidden = true;
+        message.hidden = true;
     }
 }
 
-const bindForms = (root = document) => {
-    const forms = root.querySelectorAll("form");
+const bindForms = () => {
+    const forms = document.querySelectorAll("form");
 
     forms.forEach(form => {
         if (form.dataset.bound) return;
         form.dataset.bound = "true";
 
         form.addEventListener("submit", async (e) => {
-            loading(true)
-            e.preventDefault();
-
-            const formData = new FormData(form);
-
-            if (form.id == "generate-return") formData.append('mails', JSON.stringify(return_mails));
-
             try {
-                const response = await fetch(form.action, {
-                    method: form.method,
-                    body: formData
-                });
+                loading(true)
+
+                e.preventDefault();
+
+                let url = form.action;
+                let method = form.method.toUpperCase();
+                let response
+                
+                const formData = new FormData(form);
+                
+                if (method === "POST") {
+                    response = await fetch(url, {
+                        method,
+                        body: formData
+                    });
+                } else if (method === "GET") {
+                    const params = new URLSearchParams(formData);
+                    url += `?${params.toString()}`;
+                    response = await fetch(url, {
+                        method
+                    });
+                }
 
                 const result = await response.json();
-
+                
+                const message = result.Message;
+                
                 loading(false)
-
-                if (response.ok && response.status != 202) {
-                    form.querySelectorAll('input:not([type="hidden"]), textarea').forEach(input => input.value = '');
+         
+                if (!response.ok) {
+                    alert(message);
+                    return;
                 }
 
-                if (response.status == 201) {
-                    if (return_mails[result.Message[2]]) {
-                        alert("Correspondencia já adicionada!");
-                    } else {
-                        return_mails[result.Message[2]] = {
-                            'reason': 'Desconhecido',
-                            'name': result.Message[1]
-                        };
+                const head = result.head;
+
+                form.querySelectorAll('input:not([type="hidden"]), textarea').forEach(input => input.value = '');
+
+                switch (head) {
+                    case "reload":
                         loadBody();
-                    }
-                } else if (response.status == 202) {
-                    let iframe = document.querySelector("iframe")
-                    if (!iframe) {
-                        iframe = document.createElement("iframe");
-                    }
+                        break;
+                    case "print":
+                        let iframe = document.querySelector("iframe");
 
-                    iframe.className = "hidden";
-                    document.body.appendChild(iframe);
+                        if (!iframe) {
+                            iframe = document.createElement("iframe");
+                        };
 
-                    iframe.src = `/pictures/temp/${result.Message}.pdf`;
+                        iframe.className = "hidden";
+                        document.body.appendChild(iframe);
 
-                    iframe.onload = () => {
-                        iframe.contentWindow.focus();
-                        iframe.contentWindow.print();
+                        iframe.src = `/pictures/temp/${message}.pdf`;
 
-                        return_mails = {}
-
-                        loadBody()
-                    };
-                } else if (response.status == 203) {
-                    main.innerHTML = result.Message
-                    bindForms(main)
-                } else if (response.status == 210) {
-                    alert(result.Message);
-                    loadBody()
-                } else {
-                    alert(result.Message);
+                        iframe.onload = () => {
+                            iframe.contentWindow.focus();
+                            iframe.contentWindow.print();
+                            
+                            return_data = {};
+                            
+                            loadBody();
+                        };
+                        break;
+                    case "load":
+                        main.innerHTML = message;
+                        bindForms(main);
+                        break;
+                    case "realert":
+                        alert(message);
+                        loadBody();
+                        break;
+                    case "append_return":
+                        return_data[message] = "Desconhecido";
+                        sendReturnMail();
+                        break;
+                    default:
+                        alert(message);
+                        break;
                 }
-
-            } catch (error) {
-                console.error(error);
-                alert("Erro interno no servidor.");
+            } catch (e) {
+                alert("Um erro fatal aconteceu! Por favor atualize a pagina!");
+                console.error(e)
             }
-        })
-    })
-};
+        });
+    });
+}
 
 async function loadBody() {
     loading(true)
 
-    const response = await fetch(`/mails-api/render-body/${actualTabId}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify([resume_lastFilter, resume_lastOrderBy, resume_orderDirection, return_mails])
+    const url = new URLSearchParams();
+
+    Object.entries(URLParams).forEach(([key, value]) => {
+        if (typeof value === 'object' && value !== null) {
+            url.append(key, JSON.stringify(value));
+        } else {
+            url.append(key, value);
+        };
+    });
+
+    const response = await fetch(`/mails-api/${actualTabId}?${url.toString()}`, {
+        method: "GET",
     });
 
     loading(false)
@@ -129,31 +156,17 @@ async function loadBody() {
     }
 }
 
-const toggleHelpers = () => {
-    resume_helpersOpen = !resume_helpersOpen;
-
-    const statsExtra = document.getElementById('stats-extra');
-
-    if (resume_helpersOpen) {
-        statsExtra.classList.remove('opacity-0', 'translate-x-10', 'pointer-events-none', 'max-w-0');
-        statsExtra.classList.add('opacity-100', 'translate-x-0', 'max-w-4xl');
-    } else {
-        statsExtra.classList.add('opacity-0', 'translate-x-10', 'pointer-events-none', 'max-w-0');
-        statsExtra.classList.remove('opacity-100', 'translate-x-0', 'max-w-4xl');
-    }
-};
-
 const setFilter = (e) => {
-    resume_lastFilter = e
+    URLParams.filter = e
     loadBody()
 };
 
 const setOrderBy = (e) => {
-    if (e == resume_lastOrderBy) {
-        resume_orderDirection = resume_orderDirection == "ASC" ? "DESC" : "ASC"
+    if (e == URLParams.order) {
+        URLParams.direction = URLParams.direction == "ASC" ? "DESC" : "ASC"
     } else {
-        resume_lastOrderBy = e
-        resume_orderDirection = "ASC"
+        URLParams.order = e
+        URLParams.direction = "ASC"
     }
 
     loadBody()
@@ -188,6 +201,11 @@ const updatePreviewPosition = (e) => {
     element.style.transform = `translate(${x}px, ${y}px)`;
 };
 
+const sendReturnMail = () => {
+    URLParams.return_data = return_data
+    loadBody()
+}
+
 const showPreview = (file) => {
     if (!file) return;
     const url = URL.createObjectURL(file);
@@ -207,7 +225,6 @@ window.onload = () => {
     ALLOWED_TABS.forEach(tab => {
         const span = document.createElement("a")
         span.id = tab.id
-        span.href = "#"
         span.innerHTML = tab.name
 
         if (tab.id == "resume") {

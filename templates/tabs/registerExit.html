@@ -8,8 +8,8 @@
 {% set potential_people = values_data.potential_people %}
 {% set id, name, code, fantasy, type, _, _, _, _, _, _, _, _, _, _, _ = mail_data %}
 
-<img src="/pictures/temp/{{ tmp_id }}.jpg" alt="Preview" onclick="window.open(event.target.src)"
-    class="hover:scale-105 transition-all cursor-pointer h-[50vh] w-[30vh] m-8 mx-auto rounded-sm shadow-lg border border-slate-200 justify-self-center">
+<img src="/pictures/temp/{{ tmp_id }}.jpg" alt="Preview" onclick="console.log('Clic'); window.open(event.target.src, '_blank').focus();"
+    class="hover:scale-120 transition-all active:scale-95 cursor-pointer h-[50vh] w-[30vh] m-8 mx-auto rounded-sm shadow-lg border border-slate-200 justify-self-center">
 
 <div
     class="rounded-t-sm bg-white h-[30vh] overflow-x-auto overflow-y-scroll scrollbar-hide self-end mx-4 mb-4 border-b border-gray-600">
@@ -49,7 +49,7 @@
 
 {% else %}
 
-<form id="extract-image" action="/mails-api/extract-image"
+<form action="/mails-api/registerExit"
     class="w-full flex flex-col space-y-4 items-center row-span-2 self-center justify-self-center" method="post">
     <div onclick="document.getElementById('file_input').click();" ondragover="
                 event.preventDefault();
