@@ -160,6 +160,7 @@ const bindForms = () => {
                         break;
                 }
             } catch (e) {
+                loading(false)
                 triggerToast("Um erro fatal aconteceu! Por favor atualize a pagina!", false);
                 console.error(e)
             }

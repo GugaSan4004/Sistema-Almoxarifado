@@ -38,8 +38,13 @@
 
     <input id="sub" hidden name="submit" value="" type="text">
 
-    <button {{ 'onclick=document.getElementById("sub").value="True";' if userdata else "" }} {{'' if userdata
-        else 'disabled' }} type="submit"
+    <button
+        {% if userdata %}
+            onclick="document.getElementById('sub').value='True';"
+        {% else %}
+            disabled
+        {% endif %}
+        type="submit"
         class="col-span-2 disabled:bg-light-default-main/40 enabled:hover:text-light-default-secondary enabled:text-white cursor-pointer disabled:text-black rounded-sm h-11 w-full bg-light-default-main text-white font-bold py-3 shadow-md transform active:scale-95 transition-all uppercase tracking-wide mt-4">Atualizar
         Cadastro</button>
 

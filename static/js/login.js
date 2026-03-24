@@ -18,13 +18,13 @@ window.onload = function () {
         const form = document.querySelector("form")
         form.action = "/mails-api/set-userpass"
         form.innerHTML = `
-                <h1 class="font-bold text-4xl text-center">Primeiro Login</h1>
-                <input class="duration-300 transition-colors rounded-sm border border-gray-300 focus:ring-2 focus:ring-light-default-main 0 bg-gray-200 h-11 w-11/15 px-4" required minlength="8" placeholder="Senha" name="password" id="pwd"
-                type="password">
-                <input class="duration-300 transition-colors rounded-sm border border-gray-300 focus:ring-2 focus:ring-light-default-main 0 bg-gray-200 h-11 w-11/15 px-4" required minlength="8" placeholder="Repita a Senha" name="password_repeat"
-                id="pwd_repeat" type="password">
-                <button id="submit" class="duration-300 transition-all rounded-sm active:scale-95 cursor-pointer font-bold hover:text-light-default-secondary h-11 w-11/15 bg-light-default-main text-white disabled:opacity-50 disabled:cursor-not-allowed" type="submit" disabled>Entrar</button>
-            `
+            <h1 class="font-bold text-4xl text-center">Alteraçao de Senha</h1>
+            <input class="duration-300 transition-colors rounded-sm border border-gray-300 focus:ring-2 focus:ring-light-default-main 0 bg-gray-200 h-11 w-11/15 px-4" required minlength="8" placeholder="Senha" name="password" id="pwd"
+            type="password">
+            <input class="duration-300 transition-colors rounded-sm border border-gray-300 focus:ring-2 focus:ring-light-default-main 0 bg-gray-200 h-11 w-11/15 px-4" required minlength="8" placeholder="Repita a Senha" name="password_repeat"
+            id="pwd_repeat" type="password">
+            <button id="submit" class="duration-300 transition-all rounded-sm active:scale-95 cursor-pointer font-bold hover:text-light-default-secondary h-11 w-11/15 bg-light-default-main text-white disabled:opacity-50 disabled:cursor-not-allowed" type="submit" disabled>Entrar</button>
+        `
         document.cookie = "change_pass=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
 
         const password = document.getElementById("pwd")

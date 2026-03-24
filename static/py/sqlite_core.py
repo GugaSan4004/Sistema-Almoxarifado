@@ -77,10 +77,10 @@ class init:
             cur.close()
 
         def registerPickup(self,
-                           code: str,
-                           pickupuser: str,
-                           responsableuser: str
-                           ) -> None:
+            code: str,
+            pickupuserid: int,
+            responsableuserid: int
+        ) -> None:
             cur = self.connection.cursor()
 
             cur.execute(
@@ -96,14 +96,13 @@ class init:
                 raise Exception("Correspondencia não encontrada!")
 
             if result[0] != "reception":
-                raise Exception(
-                    "Correspondencia não disponivel para retirada!")
+                raise Exception("Correspondencia não disponivel para retirada!")
 
             cur.execute(
                 "UPDATE mails set receivedOnReceptionBy = ?, sendedOnReceptionBy = ?, status = ?, leaveReceptionAt = ? WHERE code = ?",
                 (
-                    pickupuser.lower(),
-                    responsableuser.lower(),
+                    pickupuserid,
+                    responsableuserid,
                     "almox",
                     datetime.now().strftime("%Y-%m-%d %H:%M"),
                     code.upper()
@@ -547,11 +546,21 @@ class init:
 
             return True
 
-        def getRoles(self
-                     ) -> list | None:
+        def getRoles(self,
+                filter: str | int = None
+            ) -> list | None:
             cur = self.connection.cursor()
-
-            cur.execute("SELECT name FROM roles")
+            
+            if filter:
+                cur.execute(
+                    "SELECT * FROM roles WHERE name LIKE ? or id = ?", 
+                    (
+                        f"%{filter}%",
+                        filter
+                    )
+                )
+            else:
+                cur.execute("SELECT name FROM roles")
 
             result = cur.fetchall()
 
@@ -560,11 +569,10 @@ class init:
             return result
 
         def updateUser(self,
-                       id: str,
-                       name: str,
-                       role: str = None,
-                       status: int = None
-                       ) -> None:
+            id: str,
+            role: int = None,
+            status: int = None
+        ) -> None:
             # -2: Disabled
             # -1: New Account
             # 0: Normal
@@ -577,7 +585,7 @@ class init:
 
             if role is not None:
                 set_parts.append("role = ?")
-                values.append(role.lower())
+                values.append(role  )
 
             if status is not None:
                 set_parts.append("status = ?")
@@ -585,8 +593,8 @@ class init:
 
             if set_parts:
                 set_clause = ", ".join(set_parts)
-                sql = f"UPDATE users SET {set_clause} WHERE id = ? AND name = ?"
-                values.extend([id, name])
+                sql = f"UPDATE users SET {set_clause} WHERE id = ?"
+                values.extend([id])
 
                 cur.execute(
                     sql,

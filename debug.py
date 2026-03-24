@@ -1,12 +1,12 @@
 import subprocess
 import time
 import sys
+from pathlib import Path
 import os
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
-PYTHON_EXE = r"C:/Users/GUGA4/AppData/Local/Python/pythoncore-3.14-64/python.exe"
-SERVER_SCRIPT = r"C:\Users\GUGA4\Documents\Sistema-Almoxarifado\server.py"
+SERVER_SCRIPT = Path.cwd() / "server.py"
 TAILWIND_CMD = "npx @tailwindcss/cli -i ./src/base.css -o ./static/css/main.css --watch"
 
 class ChangeHandler(FileSystemEventHandler):
@@ -34,7 +34,7 @@ class DevManager:
             self.server_process.wait()
         
         print("[PYTHON] Iniciando server.py...")
-        self.server_process = subprocess.Popen([PYTHON_EXE, SERVER_SCRIPT])
+        self.server_process = subprocess.Popen(["python", SERVER_SCRIPT])
 
     def run(self):
         self.start_tailwind()

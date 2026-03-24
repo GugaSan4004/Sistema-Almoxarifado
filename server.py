@@ -556,14 +556,14 @@ def register_pickup():
 
             if not validate_code(data.get("code")):
                 raise Exception("Codigo de correspondencia invalida!")
-
+            
             mails_db.registerPickup(
                 code=data.get("code"),
-                pickupuser=data.get("user"),
-                responsableuser=users_db.getUserData(
-                    id=session.get('user_id')
-                )[1]
-            )
+                pickupuserid=users_db.getUserData(
+                    name=data.get("user")
+                ).get("id"),
+                responsableuserid=session.get('user_id')
+            )   
 
             return jsonify({
                 "head": "default",
@@ -586,7 +586,7 @@ def manage_user():
                 "users": users_db.getUsernames(),
                 "username_session": users_db.getUserData(
                     id=session.get('user_id')
-                )[1]
+                ).get("name")
             }
 
             return render_template(f"tabs/manageUsers.html", **values)
@@ -602,18 +602,20 @@ def manage_user():
 
                 if username.lower() == users_db.getUserData(
                     id=session.get("user_id")
-                )[1].lower():
-                    raise Exception(
-                        "Você não pode atualizar a sua propria conta!")
+                ).get("name").lower():
+                    raise Exception("Você não pode atualizar a sua propria conta!")
 
                 if int(data.get('status')) not in [1, 0, -2]:
                     raise Exception("Status invalido!")
 
                 users_db.updateUser(
-                    id=userdata[0],
-                    name=username,
-                    role=data.get('role'),
-                    status=int(data.get('status'))
+                    id=userdata.get('id'),
+                    role=users_db.getRoles(
+                        filter=data.get('role')
+                    )[0][0],
+                    status=int(
+                        data.get('status')
+                    )
                 )
 
                 return jsonify({
@@ -621,18 +623,20 @@ def manage_user():
                     "Message": "Cadastro atualizado com sucesso!"
                 }), 200
             else:
-                userdata = users_db.getUserData(name=username)
+                userdata = users_db.getUserData(
+                    name=username
+                )
 
                 if not userdata:
                     raise Exception("Usuario não encontrado!")
 
-                role = userdata[3]
-                status = userdata[5]
+                role = userdata.get('role')
+                status = userdata.get('status')
 
-                values = {
+                values = {  
                     "username_session": users_db.getUserData(
                         id=session.get('user_id')
-                    )[1],
+                    ).get("name"),
                     "selected_user": username,
                     "users": users_db.getUsernames(),
                     "roles": users_db.getRoles(),
@@ -642,9 +646,15 @@ def manage_user():
                     }
                 }
 
+
                 return jsonify({
                     "head": "load",
-                    "Message": f"{render_template(f"tabs/manageUsers.html", **values)}"
+                    "Message": f"{
+                        render_template(
+                            "tabs/manageUsers.html", 
+                            **values
+                        )
+                    }"
                 }), 200
         else:
             raise Exception("Method not allowed")
@@ -707,8 +717,7 @@ def register_exit():
                     if mails:
                         for mail in mails:
                             if mail[11] != "pre_returned":
-                                raise Exception(
-                                    "Correspondencia divergente encontrada! Registro cancelado.")
+                                raise Exception("Correspondencia divergente encontrada! Registro cancelado.")
 
                         for mail in mails:
                             id = mail[0]
@@ -811,9 +820,7 @@ def register_exit():
                         'status': 'shipped',
                         'deliveryDetail': people.title(),
                         'deliveredAt': datetime.strptime(date, "%Y-%m-%d"),
-                        'deliveredBy': users_db.getUserData(
-                            id=session.get('user_id')
-                        )[1],
+                        'deliveredBy': session.get('user_id'),
                         'pictureId': picture_id.upper()
                     }
 
@@ -964,7 +971,7 @@ def generate_return():
                 data=formated_data,
                 username=users_db.getUserData(
                     id=session.get('user_id')
-                )[1]
+                ).get("name")
             )
 
             for code, reason in data.items():
@@ -972,9 +979,7 @@ def generate_return():
                 mailValues = {
                     'status': 'pre_returned',
                     'deliveryDetail': reason.title() if reason else "Desconhecido",
-                    'deliveredBy': users_db.getUserData(
-                        id=session.get('user_id')
-                    )[1],
+                    'deliveredBy': session.get('user_id'),
                     'pictureId': token
                 }
 
