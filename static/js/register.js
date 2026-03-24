@@ -12,14 +12,6 @@ window.onload = () => {
         const passwordsMatch = password === repPassword && ( password.length >= 6 && repPassword.length >= 6 );
 
         submitButton.disabled = !passwordsMatch;
-
-        // if (passwordsMatch) {
-        //     submitButton.classList.remove('opacity-50', 'cursor-not-allowed');
-        //     submitButton.classList.add('hover:text-default-secondary');
-        // } else {
-        //     submitButton.classList.add('opacity-50', 'cursor-not-allowed');
-        //     submitButton.classList.remove('hover:text-default-secondary');
-        // }
     }
 
     passwordInput.addEventListener('input', validateForm);

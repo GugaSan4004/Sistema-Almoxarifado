@@ -5,8 +5,8 @@ import os
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
-PYTHON_EXE = r"C:\Users\GUGA4\AppData\Local\Programs\Python\Python314\python.exe"
-SERVER_SCRIPT = r"c:/Users/GUGA4/Documents/Projects/Sistema Almoxarifado/Sistema-Almoxarifado/server.py"
+PYTHON_EXE = r"C:/Users/GUGA4/AppData/Local/Python/pythoncore-3.14-64/python.exe"
+SERVER_SCRIPT = r"C:\Users\GUGA4\Documents\Sistema-Almoxarifado\server.py"
 TAILWIND_CMD = "npx @tailwindcss/cli -i ./src/base.css -o ./static/css/main.css --watch"
 
 class ChangeHandler(FileSystemEventHandler):

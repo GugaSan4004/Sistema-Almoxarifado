@@ -25,6 +25,52 @@ const loading = (on) => {
     }
 }
 
+
+let toastTimer = null;
+
+const triggerToast = (message, success) => {
+    const sound = document.getElementById('sound-effect')
+    const toast = document.getElementById('toast');
+    const progressBar = document.getElementById('toast-progress');
+    const status_color = success ? "green" : "red";
+    const duration = 6000;
+    
+    sound.currentTime = 0;
+    sound.src = `/static/sounds/${success ? "success" : "error"}.mp3`;
+    
+    document.querySelector("#toast > h2").innerHTML = success ? "Sucesso" : "Error";
+    document.querySelector("#toast > h1").innerHTML = message;
+
+    sound.play();
+
+    toast.classList.remove('border-green-600', 'border-red-600', 'text-green-600', 'text-red-600');
+    progressBar.classList.remove('bg-green-600', 'bg-red-600');
+
+    toast.classList.add(`border-${status_color}-600`, `text-${status_color}-600`);
+    progressBar.classList.add(`bg-${status_color}-600`);
+    
+
+    progressBar.style.transition = 'none';
+    progressBar.style.width = '100%';
+    
+
+    void progressBar.offsetWidth;
+
+    toast.classList.remove('translate-x-full');
+    progressBar.style.transition = `width ${duration}ms linear`;
+    progressBar.style.width = '0%';
+
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => {        
+        toast.classList.add('translate-x-full');
+        
+        setTimeout(() => {
+            toast.classList.remove(`border-${status_color}-600`);
+        }, 300);
+    }, duration);
+}
+
+
 const bindForms = () => {
     const forms = document.querySelectorAll("form");
 
@@ -43,7 +89,6 @@ const bindForms = () => {
                 let response
                 
                 const formData = new FormData(form);
-                
                 if (method === "POST") {
                     response = await fetch(url, {
                         method,
@@ -64,7 +109,7 @@ const bindForms = () => {
                 loading(false)
          
                 if (!response.ok) {
-                    alert(message);
+                    triggerToast(message, false);
                     return;
                 }
 
@@ -77,32 +122,33 @@ const bindForms = () => {
                         loadBody();
                         break;
                     case "print":
+                        return_data = {};
+                        
                         let iframe = document.querySelector("iframe");
-
+                        
                         if (!iframe) {
                             iframe = document.createElement("iframe");
                         };
-
+                        
                         iframe.className = "hidden";
                         document.body.appendChild(iframe);
-
+                        
                         iframe.src = `/pictures/temp/${message}.pdf`;
-
+                        
                         iframe.onload = () => {
                             iframe.contentWindow.focus();
                             iframe.contentWindow.print();
-                            
-                            return_data = {};
-                            
-                            loadBody();
+
+                            sendReturnMail();
                         };
+
                         break;
                     case "load":
                         main.innerHTML = message;
                         bindForms(main);
                         break;
                     case "realert":
-                        alert(message);
+                        triggerToast(message, true);
                         loadBody();
                         break;
                     case "append_return":
@@ -110,11 +156,11 @@ const bindForms = () => {
                         sendReturnMail();
                         break;
                     default:
-                        alert(message);
+                        triggerToast(message, true);
                         break;
                 }
             } catch (e) {
-                alert("Um erro fatal aconteceu! Por favor atualize a pagina!");
+                triggerToast("Um erro fatal aconteceu! Por favor atualize a pagina!", false);
                 console.error(e)
             }
         });
@@ -152,7 +198,7 @@ async function loadBody() {
         bindForms(main)
     } else {
         const result = await response.json()
-        alert(result.Message);
+        triggerToast(result.Message, false);
     }
 }
 
@@ -221,21 +267,21 @@ window.onload = () => {
     main = document.querySelector("main")
 
     const sidebar_opt = document.getElementById("aside-options")
-
+    
     ALLOWED_TABS.forEach(tab => {
         const span = document.createElement("a")
         span.id = tab.id
         span.innerHTML = tab.name
 
         if (tab.id == "resume") {
-            span.className = "bg-gray-400/50 border-l-6 border-default-secondary"
+            span.className = "bg-gray-400/50 border-l-6 border-light-default-secondary"
         }
 
         span.onclick = (span_clicked) => {
             if (!span_clicked.target.className) {
                 actualTabId = span_clicked.target.id
                 Array.from(sidebar_opt.children).forEach(a => a.className = "")
-                span_clicked.target.className = "bg-gray-400/50 border-l-6 border-default-secondary"
+                span_clicked.target.className = "bg-gray-400/50 border-l-6 border-light-default-secondary"
                 loadBody()
                 sidebar.classList.toggle('-translate-x-full');
             }

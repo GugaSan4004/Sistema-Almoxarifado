@@ -27,8 +27,7 @@ class init:
         ], check=True)
 
     def generate_return(self, data: dict, username: str):
-        tmp_name = ''.join(random.choices(
-            (string.ascii_letters + string.digits), k=16))
+        tmp_name = ''.join(random.choices((string.ascii_letters + string.digits), k=16)).upper()
                 
         doc = Document(self.path / "static" / "files" / "template.docx")
 

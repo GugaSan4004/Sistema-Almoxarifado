@@ -1,8 +1,11 @@
 @import "tailwindcss";
 
 @theme {
-    --color-default-main: #02326f;
-    --color-default-secondary: #6ab0f7;
+    --color-light-default-main: #02326f;
+    --color-light-default-secondary: #6ab0f7;
+
+    --color-dark-default-main: #02326f;
+    --color-dark-default-secondary: #6ab0f7;
 
     @keyframes slideOut {
         0% {

@@ -17,7 +17,7 @@
 <body class="flex bg-gray-200 justify-center items-center h-screen">
     <main class="grid bg-white grid-flow-col grid-cols-[1fr_13cm] h-140 w-270 rounded-md">
         <div id="message-body"
-            class="flex flex-col bg-default-main rounded-r-4xl rounded-l-md text-white items-center justify-center">
+            class="flex flex-col bg-light-default-main rounded-r-4xl rounded-l-md text-white items-center justify-center">
 
             <h3 class="font-bold text-4xl">Bem Vindo(a)!</h3>
             <h1 class="text-center m-8 text-gray-300">Faça login ao lado para poder acessar o software.</h1>
@@ -30,7 +30,7 @@
             <div>
                 <h2 id="name" class="pb-2">Nome</h2>
                 <input
-                    class="rounded-sm border border-gray-300 focus:ring-2 focus:ring-default-main 0 bg-gray-200 h-11 w-full px-4"
+                    class="rounded-sm border border-gray-300 focus:ring-2 focus:ring-light-default-main 0 bg-gray-200 h-11 w-full px-4"
                     required minlength="4" placeholder="Digite seu nome completo" name="username" type="text">
             </div>
 
@@ -38,26 +38,26 @@
                 <h2 class="pb-2">Senha</h2>
                 <input
                     id="password"
-                    class="rounded-sm border border-gray-300 focus:ring-2 focus:ring-default-main  bg-gray-200 h-11 w-full px-4"
-                    required minlength="6" placeholder="Crie uma senha" name="password" type="password">
+                    class="rounded-sm border border-gray-300 focus:ring-2 focus:ring-light-default-main  bg-gray-200 h-11 w-full px-4"
+                    required minlength="8" placeholder="Crie uma senha" name="password" type="password">
             </div>
 
             <div>
                 <h2 class="pb-2">Confirmar Senha</h2>
                 <input 
                     id="confirm_password"
-                    class="rounded-sm border border-gray-300 focus:ring-2 focus:ring-default-main  bg-gray-200 h-11 w-full px-4"
-                    required minlength="6" placeholder="Repita a mesma senha" name="confirm_password" type="password">
+                    class="rounded-sm border border-gray-300 focus:ring-2 focus:ring-light-default-main  bg-gray-200 h-11 w-full px-4"
+                    required minlength="8" placeholder="Repita a mesma senha" name="confirm_password" type="password">
             </div>
 
             <button
-                class="rounded-sm active:scale-95 cursor-pointer font-bold h-11 enabled:hover:text-default-secondary bg-default-main text-white transition-all disabled:opacity-50"
+                class="rounded-sm active:scale-95 cursor-pointer font-bold h-11 enabled:hover:text-light-default-secondary bg-light-default-main text-white transition-all disabled:opacity-50"
                 type="submit" disabled>Registrar</button>
 
             <div class="text-gray-400 text-center">
                 Já tem uma conta?
                 <a href="/"
-                    class="cursor-pointer hover:text-default-secondary font-bold hover:text-default-green">Entre.</a>
+                    class="cursor-pointer hover:text-light-default-secondary font-bold hover:text-default-green">Entre.</a>
             </div>
             {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}

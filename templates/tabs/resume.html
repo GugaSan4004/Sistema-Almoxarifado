@@ -6,7 +6,7 @@
         </svg>
     </span>
     <input onkeydown="if(event.key == 'Enter') { setFilter(event.target.value) }"
-        class="block w-full rounded-sm px-10 py-2 border border-gray-300 leading-5 bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-default-main focus:border-default-main sm:text-sm transition duration-300 ease-in-out"
+        class="block w-full rounded-sm px-10 py-2 border border-gray-300 leading-5 bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-light-default-main focus:border-light-default-main sm:text-sm transition duration-300 ease-in-out"
         placeholder="Buscar por nome, código AR, data..." type="search" id="filter-input" value="{{ filter }}">
     <span onclick="setFilter('')" class="
                     cursor-pointer absolute inset-y-0 right-2 flex items-center pl-3
@@ -32,7 +32,7 @@
             <p class="font-semibold">{{ totals.returned }}</p>
         </div>
         <div onclick="setFilter('shipped')"
-            class="cursor-pointer bg-default-main/8 hover:bg-default-main/25 duration-300 transition-colors border-default-main text-default-main border-l-4 p-2 px-4 shadow-sm w-45">
+            class="cursor-pointer bg-light-default-main/8 hover:bg-light-default-main/25 duration-300 transition-colors border-light-default-main text-light-default-main border-l-4 p-2 px-4 shadow-sm w-45">
             <p class="uppercase font-bold">Entregues</p>
             <p class="font-semibold">{{ totals.shipped }}</p>
         </div>
@@ -47,7 +47,7 @@
             <p class=" font-semibold">{{ totals.reception }}</p>
         </div>
         <div onclick="setFilter('almox')"
-            class="cursor-pointer bg-default-main/8 hover:bg-default-main/25 duration-300 transition-colors border-default-main text-default-main border-l-4 p-2 px-4 shadow-sm w-50">
+            class="cursor-pointer bg-light-default-main/8 hover:bg-light-default-main/25 duration-300 transition-colors border-light-default-main text-light-default-main border-l-4 p-2 px-4 shadow-sm w-50">
             <p class="uppercase font-bold">Almoxarifado</p>
             <p class="font-semibold">{{ totals.almox }}</p>
         </div>
@@ -65,7 +65,7 @@
             statsExtra.classList.remove('opacity-100', 'translate-x-0', 'max-w-4xl');
         }
     "
-        class="bg-default-main p-4 rounded-sm shadow-md w-27 cursor-pointer transition duration-300 hover:bg-blue-600 z-10 h-full flex justify-center flex-col">
+        class="bg-light-default-main p-4 rounded-sm shadow-md w-27 cursor-pointer transition duration-300 hover:bg-blue-600 z-10 h-full flex justify-center flex-col">
         <p class="text-xs font-bold text-blue-100 uppercase tracking-wider">Total</p>
         <p data-field="total" class="text-2xl font-black text-white">{{ totals.total }}</p>
     </div>
@@ -74,26 +74,26 @@
 <div
     class="rounded-t-sm -row-start-1 col-span-2 bg-white h-[60vh] overflow-x-auto overflow-y-scroll scrollbar-hide self-end mx-4 mb-4 border-b border-gray-600">
     <div
-        class="grid grid-cols-[1cm_1fr_3.2cm_0.5fr_1.6cm_2cm_2.2cm_3.7cm_2.5cm_2.8cm] pr-2  *:transition-colors *:duration-300 bg-default-main cursor-pointer text-white sticky top-0 z-10 gap-2 *:h-10 font-semibold border-b border-gray-600 text-sm min-w-300 *:flex *:items-center *:justify-center *:select-none">
-        <span onclick="setOrderBy('id')" class="{% if actualOrder == 'id' %}text-default-secondary{% endif %}">ID</span>
+        class="grid grid-cols-[1cm_1fr_3.2cm_0.5fr_1.6cm_2cm_2.2cm_3.7cm_2.5cm_2.8cm] pr-2  *:transition-colors *:duration-300 bg-light-default-main cursor-pointer text-white sticky top-0 z-10 gap-2 *:h-10 font-semibold border-b border-gray-600 text-sm min-w-300 *:flex *:items-center *:justify-center *:select-none">
+        <span onclick="setOrderBy('id')" class="{% if actualOrder == 'id' %}text-light-default-secondary{% endif %}">ID</span>
         <span onclick="setOrderBy('name')"
-            class="{% if actualOrder == 'name' %}text-default-secondary{% endif %}">Nome</span>
+            class="{% if actualOrder == 'name' %}text-light-default-secondary{% endif %}">Nome</span>
         <span onclick="setOrderBy('code')"
-            class="{% if actualOrder == 'code' %}text-default-secondary{% endif %}">Codigo AR</span>
+            class="{% if actualOrder == 'code' %}text-light-default-secondary{% endif %}">Codigo AR</span>
         <span onclick="setOrderBy('fantasy')"
-            class="{% if actualOrder == 'fantasy' %}text-default-secondary{% endif %}">Nome Fantasia</span>
+            class="{% if actualOrder == 'fantasy' %}text-light-default-secondary{% endif %}">Nome Fantasia</span>
         <span onclick="setOrderBy('type')"
-            class="{% if actualOrder == 'type' %}text-default-secondary{% endif %}">Tipo</span>
+            class="{% if actualOrder == 'type' %}text-light-default-secondary{% endif %}">Tipo</span>
         <span onclick="setOrderBy('priority')"
-            class="{% if actualOrder == 'priority' %}text-default-secondary{% endif %}">Prioridade</span>
+            class="{% if actualOrder == 'priority' %}text-light-default-secondary{% endif %}">Prioridade</span>
         <span onclick="setOrderBy('join_date')"
-            class="{% if actualOrder == 'join_date' %}text-default-secondary{% endif %}">Entrada</span>
+            class="{% if actualOrder == 'join_date' %}text-light-default-secondary{% endif %}">Entrada</span>
         <span onclick="setOrderBy('receive_name')"
-            class="{% if actualOrder == 'receive_name' %}text-default-secondary{% endif %}">Recebedor(a)</span>
+            class="{% if actualOrder == 'receive_name' %}text-light-default-secondary{% endif %}">Recebedor(a)</span>
         <span onclick="setOrderBy('receive_date')"
-            class="{% if actualOrder == 'receive_date' %}text-default-secondary{% endif %}">Saída</span>
+            class="{% if actualOrder == 'receive_date' %}text-light-default-secondary{% endif %}">Saída</span>
         <span onclick="setOrderBy('photo_id')"
-            class="{% if actualOrder == 'photo_id' %}text-default-secondary{% endif %}">Comprovante</span>
+            class="{% if actualOrder == 'photo_id' %}text-light-default-secondary{% endif %}">Comprovante</span>
     </div>
     <div class="flex flex-col">
         {% for mail in mails %}
@@ -107,7 +107,7 @@
         {% elif status == "casualty" %}
         {% set row_class = "text-pink-600" %}
         {% elif status in ["almox", "reception"] and entryDate %}
-        {% set hp, limit = is_delayed(entryDate, priority) %}
+        {% set hp, limit = is_delayed_function(entryDate, priority) %}
         {% if hp > limit %}
         {% set row_class = "text-red-600 font-bold" %}
         {% set row_title = "Dias parados: " ~ ((hp / 24) | round | int | string) %}
@@ -117,10 +117,10 @@
 
         {% endif %}
 
-        {% if user_role | lower == "admin" and (status == "almox" or status == "reception")%}
+        {% if is_admin and (status == "almox" or status == "reception")%}
 
         <form method="post" action="/mails-api/resume"
-            class="*:truncate *:overflow-hidden *:whitespace-nowrap grid-cols-[1cm_1fr_3.2cm_0.5fr_1.6cm_2cm_2.2cm_3.7cm_2.5cm_2.8cm] {{ row_class }} duration-300 transition-colors grid gap-2 py-2 pr-2 border-b border-gray-700/50 hover:bg-default-main/15 items-center text-xs text-center *:text-ellipsis *:whitespace-nowrap *:overflow-hidden *:truncate"
+            class="*:truncate *:overflow-hidden *:whitespace-nowrap grid-cols-[1cm_1fr_3.2cm_0.5fr_1.6cm_2cm_2.2cm_3.7cm_2.5cm_2.8cm] {{ row_class }} duration-300 transition-colors grid gap-2 py-2 pr-2 border-b border-gray-700/50 hover:bg-light-default-main/15 items-center text-xs text-center *:text-ellipsis *:whitespace-nowrap *:overflow-hidden *:truncate"
             title="{{ row_title }}">
             <input type="hidden" name="id" value="{{ id }}">
             <span>{{ id }}</span>
@@ -132,15 +132,13 @@
                 <option value="Carta" {{ 'selected' if type=="Carta" else '' }}>Carta</option>
                 <option value="Pacote" {{ 'selected' if type=="Pacote" else '' }}>Pacote</option>
             </select>
-            <select name="priority" class="{{ get_priority_class(priority) }} " onchange="this.form.requestSubmit()">
+            <select name="priority" class="{{ get_priority_class_function(priority) }} " onchange="this.form.requestSubmit()">
                 <option value="Simples" {{ 'selected' if priority=="Simples" else '' }}>Simples</option>
                 <option value="Judicial" {{ 'selected' if priority=="Judicial" else '' }}>Judicial</option>
             </select>
-            <span>{{ format_date(entryDate) }}</span>
-            <input name="receiverName"
-                value="{{ receiverName if receiverName and status != 'pre_returned' else '---' }}"
-                onchange="this.form.requestSubmit()"></input>
-            <span>{{ format_date(exitDate) if exitDate else "---" }}</span>
+            <span>{{ format_date_function(entryDate) }}</span>
+            <span>{{ receiverName if receiverName and status != 'pre_returned' else '---' }}</span>
+            <span>{{ format_date_function(exitDate) if exitDate else "---" }}</span>
 
             <span onclick="if (event.target.dataset.img) {
                     window.open(event.target.dataset.img, '_blank').focus();
@@ -160,7 +158,7 @@
                 " onmouseleave="clearTimeout(resume_hoverTimeout);
                     changePreviewPicture();
                 "
-                class="rounded-sm duration-300 transition-colors cursor-pointer bg-gray-600/20 hover:bg-default-main hover:text-white py-1"
+                class="rounded-sm duration-300 transition-colors cursor-pointer bg-gray-600/20 hover:bg-light-default-main hover:text-white py-1"
                 {% if photoId and status !="pre_returned" %} data-img="/pictures/mails/{{ photoId }}.jpg"> {{ photoId }}
                 {% else %}
                 > ---
@@ -170,7 +168,7 @@
         </form>
         {% else %}
 
-        <div class="*:truncate *:overflow-hidden *:whitespace-nowrap grid-cols-[1cm_1fr_3.2cm_0.5fr_1.6cm_2cm_2.2cm_3.7cm_2.5cm_2.8cm] {{ row_class }} duration-300 transition-colors grid gap-2 py-2 pr-2 border-b border-gray-700/50 hover:bg-default-main/15 items-center text-xs text-center *:text-ellipsis *:whitespace-nowrap *:overflow-hidden *:truncate"
+        <div class="*:truncate *:overflow-hidden *:whitespace-nowrap grid-cols-[1cm_1fr_3.2cm_0.5fr_1.6cm_2cm_2.2cm_3.7cm_2.5cm_2.8cm] {{ row_class }} duration-300 transition-colors grid gap-2 py-2 pr-2 border-b border-gray-700/50 hover:bg-light-default-main/15 items-center text-xs text-center *:text-ellipsis *:whitespace-nowrap *:overflow-hidden *:truncate"
             title="{{ row_title }}">
 
             <span>{{ id }}</span>
@@ -178,10 +176,10 @@
             <span class="font-semibold">{{ code }}</span>
             <span class="text-start">{{ fantasy }}</span>
             <span>{{ type }}</span>
-            <span class="{{ get_priority_class(priority) }}">{{ priority }}</span>
-            <span>{{ format_date(entryDate) }}</span>
+            <span class="{{ get_priority_class_function(priority) }}">{{ priority }}</span>
+            <span>{{ format_date_function(entryDate) }}</span>
             <span>{{ receiverName if receiverName and status != "pre_returned" else "---" }}</span>
-            <span>{{ format_date(exitDate) if exitDate else "---" }}</span>
+            <span>{{ format_date_function(exitDate) if exitDate else "---" }}</span>
 
             <span onclick="if (event.target.dataset.img) {
                     window.open(event.target.dataset.img, '_blank').focus();
@@ -201,7 +199,7 @@
                 " onmouseleave="clearTimeout(resume_hoverTimeout);
                     changePreviewPicture();
                 "
-                class="rounded-sm duration-300 transition-colors cursor-pointer bg-gray-600/20 hover:bg-default-main hover:text-white py-1"
+                class="rounded-sm duration-300 transition-colors cursor-pointer bg-gray-600/20 hover:bg-light-default-main hover:text-white py-1"
                 {% if photoId and status !="pre_returned" %} data-img="/pictures/mails/{{ photoId }}.jpg"> {{ photoId }}
                 {% else %}
                 > ---

@@ -1,4 +1,4 @@
-<div class="col-span-2 self-center text-3xl! font-bold text-center text-default-main">Gerador de Devolução</div>
+<div class="col-span-2 self-center text-3xl! font-bold text-center text-light-default-main">Gerador de Devolução</div>
 <div class="-row-start-2 ml-4 mb-3 relative md:w-80 h-max self-end items-center flex">
     <span class="absolute inset-y-0 left-0 flex items-center pl-3">
         <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -8,7 +8,7 @@
     </span>
     <form class="w-full" action="/mails-api/generateReturn" method="get">
         <input id="barcode-input"
-            class="block w-full rounded-sm px-10 py-2 border border-gray-300 leading-5 bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-default-main focus:border-default-main sm:text-sm transition duration-300 ease-in-out"
+            class="block w-full rounded-sm px-10 py-2 border border-gray-300 leading-5 bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-light-default-main focus:border-light-default-main sm:text-sm transition duration-300 ease-in-out"
             placeholder="Buscar por código AR..." 
             name="code" 
             type="search"
@@ -24,14 +24,14 @@
             document.getElementById('values').value = JSON.stringify(return_data)
         "
         type="submit" {{ '' if mails else 'disabled' }}
-        class="h-9.5 disabled:bg-default-main/40 enabled:hover:text-default-secondary bg-default-main enabled:text-white disabled:text-black cursor-pointer md:w-80 text-center active:scale-95 transition-all rounded-sm">
+        class="h-9.5 disabled:bg-light-default-main/40 enabled:hover:text-light-default-secondary bg-light-default-main enabled:text-white disabled:text-black cursor-pointer md:w-80 text-center active:scale-95 transition-all rounded-sm">
         Gerar Documento
     </button>
 </form>
 <div id="return-preview"
     class="rounded-t-sm -row-start-1 col-span-2 bg-white h-[60vh] overflow-x-auto overflow-y-scroll scrollbar-hide self-end mx-4 mb-4 border-b border-gray-600">
     <div
-        class="grid grid-cols-[1cm_1fr_3.2cm_0.5fr_1.4cm_2cm_2.2cm_3cm] pr-2  *:transition-colors *:duration-300 bg-default-main text-white sticky top-0 z-10 gap-2 *:h-10 font-semibold border-b border-gray-600 text-sm min-w-300 *:flex *:items-center *:justify-center *:select-none">
+        class="grid grid-cols-[1cm_1fr_3.2cm_0.5fr_1.4cm_2cm_2.2cm_3cm] pr-2  *:transition-colors *:duration-300 bg-light-default-main text-white sticky top-0 z-10 gap-2 *:h-10 font-semibold border-b border-gray-600 text-sm min-w-300 *:flex *:items-center *:justify-center *:select-none">
         <span>ID</span>
         <span>Nome</span>
         <span>Codigo AR</span>
@@ -50,18 +50,18 @@
                 delete return_data['{{ code }}']; 
                 sendReturnMail();
             }"
-            class="*:truncate cursor-pointer *:overflow-hidden *:whitespace-nowrap grid-cols-[1cm_1fr_3.2cm_0.5fr_1.4cm_2cm_2.2cm_3cm] {{ row_class }} duration-300 transition-colors grid gap-2 py-2 pr-2 border-b border-gray-700/50 hover:bg-default-main/15 items-center text-xs text-center *:text-ellipsis *:whitespace-nowrap *:overflow-hidden *:truncate">
+            class="*:truncate cursor-pointer *:overflow-hidden *:whitespace-nowrap grid-cols-[1cm_1fr_3.2cm_0.5fr_1.4cm_2cm_2.2cm_3cm] {{ row_class }} duration-300 transition-colors grid gap-2 py-2 pr-2 border-b border-gray-700/50 hover:bg-light-default-main/15 items-center text-xs text-center *:text-ellipsis *:whitespace-nowrap *:overflow-hidden *:truncate">
 
             <span>{{ id }}</span>
             <span class="text-start">{{ name }}</span>
             <span class="font-semibold">{{ code }}</span>
             <span class="text-start">{{ fantasy }}</span>
             <span>{{ type }}</span>
-            <span class="{{ get_priority_class(priority) }}">{{ priority }}</span>
-            <span>{{ format_date(entryDate) }}</span>
+            <span class="{{ get_priority_class_function(priority) }}">{{ priority }}</span>
+            <span>{{ format_date_function(entryDate) }}</span>
 
             <select onchange="return_data['{{ code }}'] = event.target.value;"
-                class="rounded-sm duration-300 transition-colors cursor-pointer bg-gray-600/20 hover:bg-default-main hover:text-white py-1 p-2 text-center">
+                class="rounded-sm duration-300 transition-colors cursor-pointer bg-gray-600/20 hover:bg-light-default-main hover:text-white py-1 p-2 text-center">
                 <option value="Desconhecido" {{ 'selected' if reason=='Recusado' else '' }}>Desconhecido</option>
                 <option value="Mudou-se" {{ 'selected' if reason=='Mudou-se' else '' }}>Mudou-se</option>
                 <option value="Recusado" {{ 'selected' if reason=='Recusado' else '' }}>Recusado</option>

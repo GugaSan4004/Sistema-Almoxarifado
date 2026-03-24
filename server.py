@@ -85,21 +85,33 @@ with app.app_context():
 def firewall():
     data = request.get_data(as_text=True)
 
-    if len(data) > 10_000_000:
+    if len(data) > 500_000:
         abort(413)
 
 
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        user = users_db.getUserData(name=session.get(
-            "user_name"), id=session.get("user_id"))
-
         if 'user_id' not in session:
             return redirect(url_for('login'))
+
+        user = users_db.getUserData(
+            id=session.get("user_id")
+        )
+
         if user:
-            if user[4] < 0:
-                return redirect(url_for('login'))
+            if user.get("status") < 0:
+                return redirect(
+                    location=url_for(
+                        endpoint='login'
+                    )
+                )
+        else:
+            return redirect(
+                location=url_for(
+                    endpoint='login'
+                )
+            )
 
         return f(*args, **kwargs)
     return decorated_function
@@ -110,12 +122,11 @@ def roles_required(allowed_roles: list = []):
         @login_required
         @wraps(f)
         def wrapper(*args, **kwargs):
-            allowed_roles.append("admin")
+            user = users_db.getUserData(
+                id=session.get('user_id')
+            )
 
-            user = users_db.getUserData(name=session.get(
-                'user_name'), id=session.get('user_id'))
-
-            if session.get('user_role') not in allowed_roles or user[3] not in allowed_roles:
+            if user.get("role") not in allowed_roles:
                 return redirect(url_for('login'))
             return f(*args, **kwargs)
         return wrapper
@@ -127,12 +138,18 @@ def has_tab_access(requested_tab: str):
         @login_required
         @wraps(f)
         def wrapper(*args, **kwargs):
-            tabs = users_db.getAllowedTabs(session.get('user_role'))
+            user = users_db.getUserData(
+                id=session.get('user_id')
+            )
 
-            tabs = [tab.get('id') for tab in tabs]
+            tabs = user.get("allowed_tabs")
 
-            if requested_tab not in tabs:
-                return redirect(url_for('mails'))
+            if requested_tab not in [tab.get("id") for tab in tabs]:
+                return redirect(
+                    location=url_for(
+                        endpoint='mails'
+                    )
+                )
             return f(*args, **kwargs)
         return wrapper
     return decorator
@@ -142,6 +159,70 @@ def validate_code(code: str) -> bool:
     if re.match(r'^[A-Za-z]{2}\d{9}BR$', str(code).upper()):
         return True
     return False
+
+
+def is_delayed(entry_date_str: str, priority: str):
+    if not entry_date_str:
+        return False
+    try:
+        entry_date = datetime.strptime(
+            entry_date_str, "%Y-%m-%d %H:%M")
+        now = datetime.now()
+
+        diff = now - entry_date
+        hours_passed = diff.total_seconds() / 3600
+
+        thresholds = {
+            "Simples": 120,
+            "Judicial": 72
+        }
+
+        limit = thresholds.get(priority, 48)
+
+        return hours_passed, limit
+    except Exception:
+        return False
+
+
+def format_date(dateStr: str):
+    if not dateStr:
+        return ""
+    return "/".join(dateStr.split(' ')[0].split('-')[::-1])
+
+
+def fix_and_format_date(date_str: str):
+    if not date_str:
+        return datetime.now().strftime('%Y-%m-%d')
+
+    clean_str = date_str.replace('I', '1').replace(
+        'l', '1').replace('i', '1')
+    clean_str = re.sub(r'[^0-9/]', '', clean_str)
+
+    match = re.search(
+        r'(\d{1,2})/(\d{1,2})/(\d{2,4})', clean_str)
+
+    if match:
+        day, month, year = match.groups()
+
+        if len(year) == 2:
+            year = "20" + year
+
+        day = day.zfill(2)
+        month = month.zfill(2)
+
+        try:
+            dt = datetime.strptime(
+                f"{day}/{month}/{year}", "%d/%m/%Y")
+            return dt.strftime('%Y-%m-%d')
+        except ValueError:
+            return datetime.now().strftime('%Y-%m-%d')
+
+    return datetime.now().strftime('%Y-%m-%d')
+
+
+def get_priority_class(priority: str):
+    color = "bg-red-500/30" if priority == "Judicial" else "bg-green-500/30"
+    return f"{color} rounded-full px-2 font-semibold pb-0.5"
 
 
 @app.errorhandler(404)
@@ -160,7 +241,7 @@ def login():
         try:
             change_pass_cookie = request.cookies.get('change_pass')
 
-            if not change_pass_cookie and (session.get('user_id') and session.get('user_role') and session.get("user_name")):
+            if not change_pass_cookie and session.get('user_id'):
                 return redirect(url_for("mails"))
         except Exception:
             pass
@@ -171,77 +252,157 @@ def login():
             data = request.form
             username = data.get("username")
 
-            user = users_db.getUserData(name=username)
+            user = users_db.getUserData(
+                name=username
+            )
 
             if not user:
-                flash("Usuário não encontrado!", "danger")
-                return redirect(url_for('login'))
+                flash(
+                    message="Usuário não encontrado!",
+                    category="danger"
+                )
+                return redirect(
+                    location=url_for(
+                        endpoint='login'
+                    )
+                )
 
-            if check_password_hash(user[2], data["password"]):
-                if user[4] == -1:
-                    flash(
-                        "Essa conta está inativa! <br> Consulte o administrador para mais informações!", "danger")
-                    return redirect(url_for('login'))
+            if not check_password_hash(user.get("password"), data["password"]):
+                flash(
+                    message="Senha incorreta!",
+                    category="warning"
+                )
+                return redirect(
+                    location=url_for(
+                        endpoint='login'
+                    )
+                )
 
-                if user[4] == -2:
-                    flash(
-                        "Sua conta foi desativada! <br> Consulte o administrador para mais informações!", "danger")
-                    return redirect(url_for('login'))
+            if user.get("status") == -1:
+                flash(
+                    message="Essa conta ainda não está aprovada! <br> Peça ao administrador para ativa-la!",
+                    category="danger"
+                )
+                return redirect(
+                    location=url_for(
+                        endpoint='login'
+                    )
+                )
 
-                session.permanent = False
-                session['user_id'] = user[0]
-                session['user_name'] = user[1]
-                session['user_role'] = user[3]
+            if user.get("status") == -2:
+                flash(
+                    message="Sua conta foi desativada! <br> Consulte o administrador para mais informações!",
+                    category="danger"
+                )
 
-                if user[4] == 1:
-                    response = make_response(redirect(url_for('login')))
+                return redirect(
+                    location=url_for(
+                        endpoint='login'
+                    )
+                )
 
-                    response.set_cookie('change_pass', 'true', max_age=30)
-                    return response
+            session.permanent = False
+            session['user_id'] = user.get("id")
 
-                return redirect(url_for('mails'))
-            else:
-                flash("Senha incorreta!", "warning")
-                return redirect(url_for('login'))
+            if user.get("status") == 1:
+                response = make_response(
+                    redirect(
+                        location=url_for(
+                            endpoint='login'
+                        )
+                    )
+                )
+
+                response.set_cookie('change_pass', 'true', max_age=30)
+                return response
+
+            return redirect(
+                location=url_for(
+                    endpoint='mails'
+                )
+            )
         except Exception:
-            return redirect(url_for('login'))
+            return redirect(
+                location=url_for(
+                    endpoint='login'
+                )
+            )
 
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
-    if request.method == "GET":
-        return render_template("initial/register.html")
-    elif request.method == "POST":
-        data = request.form
-        username = data.get("username")
-        password = data.get("new_password")
-        rep_password = data.get("rep_new_password")
+    try:
+        if request.method == "GET":
+            return render_template("initial/register.html")
+        elif request.method == "POST":
+            data = request.form
+            username = data.get("username")
+            password = data.get("password")
+            rep_password = data.get("confirm_password")
 
-        if password != rep_password:
-            flash("As senhas não coicidem!", "warning")
-            return redirect(url_for('register'))
+            if password != rep_password:
+                flash(
+                    message="As senhas não coicidem!",
+                    category="warning"
+                )
+                return redirect(
+                    location=url_for(
+                        endpoint='register'
+                    )
+                )
 
-        name_parts = username.split()
-        check_name = " ".join(name_parts[:2]) if len(
-            name_parts) >= 2 else name_parts[0] if name_parts else ""
+            if len(password) > 8:
+                flash(
+                    message="A senha deve ter pelo menos 8 caracteres!",
+                    category="warning"
+                )
+                return redirect(
+                    location=url_for(
+                        endpoint='register'
+                    )
+                )
 
-        user = users_db.getUserData(name=check_name)
+            name_parts = username.split()
+            check_name = " ".join(name_parts[:2]) if len(
+                name_parts) >= 2 else name_parts[0] if name_parts else ""
 
-        if user:
-            flash("Já existe um usuario cadastrado com esse nome!", "danger")
-            return redirect(url_for('register'))
+            if users_db.getUserData(name=check_name):
+                flash(
+                    message="Já existe um usuario cadastrado com esse nome!",
+                    category="danger"
+                )
+                return redirect(
+                    location=url_for(
+                        endpoint='register'
+                    )
+                )
 
-        try:
-            password = generate_password_hash(password, salt_length=64)
+            users_db.registerNewUser(
+                username=username,
+                password=generate_password_hash(password, salt_length=64)
+            )
 
-            users_db.registerNewUser(username, password)
-        except Exception:
-            flash("Erro ao cadastrar. <br> Tente novamente mais tarde!", "danger")
-            return redirect(url_for('login'))
-        else:
             flash(
-                "Cadastro efetuado com sucesso! <br> Peça para um administrador ativar sua conta!", "success")
-            return redirect(url_for('login'))
+                message="Cadastro efetuado com sucesso! <br> Peça para um administrador ativar sua conta!",
+                category="success"
+            )
+            return redirect(
+                location=url_for(
+                    endpoint='login'
+                )
+            )
+        else:
+            raise Exception("Method not allowed")
+    except Exception:
+        flash(
+            message="Erro ao cadastrar. <br> Tente novamente mais tarde!",
+            category="danger"
+        )
+        return redirect(
+            location=url_for(
+                endpoint='login'
+            )
+        )
 
 
 @app.route("/logout", methods=["GET"])
@@ -253,10 +414,19 @@ def logout():
 @app.route("/mails", methods=["GET"])
 @login_required
 def mails():
-    user_role = session.get('user_role')
-    allowed_tabs = users_db.getAllowedTabs(user_role)
+    user = users_db.getUserData(
+        id=session.get('user_id')
+    )
 
-    return render_template("mails/mails.html", allowed_tabs=allowed_tabs)
+    values = {
+        "allowed_tabs": user.get("allowed_tabs"),
+        "user_name": user.get("name"),
+    }
+
+    return render_template(
+        template_name_or_list="mails/mails.html",
+        **values
+    )
 
 
 @app.route("/pictures/<path:filename>")
@@ -273,50 +443,24 @@ def picture(filename):
 @has_tab_access("resume")
 def resume():
     try:
-        def is_delayed(entry_date_str: str, priority: str):
-            if not entry_date_str:
-                return False
-            try:
-                entry_date = datetime.strptime(
-                    entry_date_str, "%Y-%m-%d %H:%M")
-                now = datetime.now()
-
-                diff = now - entry_date
-                hours_passed = diff.total_seconds() / 3600
-
-                thresholds = {
-                    "Simples": 120,
-                    "Judicial": 72
-                }
-
-                limit = thresholds.get(priority, 48)
-
-                return hours_passed, limit
-            except Exception:
-                return False
-
-        def format_date(dateStr: str):
-            if not dateStr:
-                return ""
-            return "/".join(dateStr.split(' ')[0].split('-')[::-1])
-
-        def get_priority_class(priority: str):
-            color = "bg-red-500/30" if priority == "Judicial" else "bg-green-500/30"
-            return f"{color} rounded-full px-2 font-semibold pb-0.5"
-
         values = {
             "totals": mails_db.getTotals(),
             "mails": mails_db.getMails(request.args.get("filter", ""), request.args.get("order", "id"), request.args.get("direction", "DESC")),
-            "is_delayed": is_delayed,
-            "format_date": format_date,
-            "get_priority_class": get_priority_class,
+            "is_delayed_function": is_delayed,
+            "format_date_function": format_date,
+            "get_priority_class_function": get_priority_class,
             "filter": request.args.get("filter", ""),
             "actualOrder": request.args.get("order", "id"),
-            "user_role": session.get("user_role")
+            "is_admin": users_db.getUserData(
+                id=session.get('user_id')
+            ).get("role") == "admin"
         }
 
         if request.method == "GET":
-            return render_template("tabs/resume.html", **values)
+            return render_template(
+                template_name_or_list="tabs/resume.html", 
+                **values
+            )
         elif request.method == "POST":
             @roles_required(["admin"])
             def update_mails():
@@ -327,14 +471,12 @@ def resume():
                 fantasy = data.get('fantasy')
                 name = data.get('name')
                 priority = data.get('priority')
-                receiverName = data.get('receiverName')
                 _type = data.get('type')
 
                 mailValues = {
                     "fantasy": fantasy.title() if (fantasy != "" and fantasy) else "---",
                     "name": name.title() if (name != "" and name) else "---",
                     "priority": priority.title() if (priority != "" and priority) else "Simples",
-                    "deliveredBy": receiverName.title() if (receiverName != "" and receiverName) else "---",
                     "type": _type.title() if (_type != "" and _type) else "Caixa"
                 }
 
@@ -342,7 +484,10 @@ def resume():
                     "id": id.upper()
                 }
 
-                mails_db.updateMail(values=mailValues, search=mailSearch)
+                mails_db.updateMail(
+                    values=mailValues,
+                    search=mailSearch
+                )
 
                 return jsonify({
                     "head": "reload",
@@ -354,42 +499,36 @@ def resume():
             raise Exception("Method not allowed")
     except Exception as e:
         return jsonify({
-            "Message": f"Error: {e}"
+            "Message": f"{e}"
         }), 400
 
 
 @app.route("/mails-api/registerNewMail", methods=["GET", "POST"])
 @has_tab_access("registerNewMail")
-@roles_required(["recepcionista"])
 def register_mail():
     try:
         if request.method == "GET":
-            return render_template("tabs/registerNewMail.html")
+            return render_template(
+                template_name_or_list="tabs/registerNewMail.html"
+            )
         elif request.method == "POST":
             data = request.form
 
-            code = data["code"]
-            sender = data["sender"]
-            fantasy = data["fantasy"] if data["fantasy"] else ""
-            _type = data["type"]
-            priority = data["priority"]
-            username = session.get('user_name')
+            if not validate_code(data.get("code")):
+                raise Exception("Codigo de correspondencia invalida!")
 
-            if not validate_code(code):
-                raise Exception("Codigo de rastreio invalido!")
-            
             mails_db.registerNewMail(
-                sender=sender,
-                code=code,
-                fantasy=fantasy,
-                _type=_type,
-                priority=priority,
-                username=username
+                sender=data.get("sender"),
+                code=data.get("code"),
+                fantasy=data.get("fantasy", ""),
+                _type=data.get("type"),
+                priority=data.get("priority"),
+                user_id=session.get('user_id')
             )
 
             return jsonify({
                 "head": "default",
-                "Message": "Cadastrado Com Sucesso!"
+                "Message": "Correspondencia cadastrada com sucesso!"
             }), 200
         else:
             raise Exception("Method not allowed")
@@ -398,36 +537,37 @@ def register_mail():
             e = "Correspondencia já cadastrada!"
 
         return jsonify({
-            "Message": f"Error: {e}"
+            "Message": f"{e}"
         }), 400
 
 
 @app.route("/mails-api/registerPickup", methods=["GET", "POST"])
 @has_tab_access("registerPickup")
-@roles_required(["recepcionista"])
 def register_pickup():
     try:
         if request.method == "GET":
             values = {
-                "users": users_db.getUsernames()
+                "users": users_db.getUsernames(inactives=False)
             }
 
             return render_template(f"tabs/registerPickup.html", **values)
         elif request.method == "POST":
             data = request.form
 
-            code = data["code"]
-            pickupuser = data["user"]
-            responsableuser = session.get('user_name')
+            if not validate_code(data.get("code")):
+                raise Exception("Codigo de correspondencia invalida!")
 
-            if not validate_code(code):
-                raise Exception("Codigo de rastreio invalido!")
-            
-            mails_db.registerPickup(code, pickupuser, responsableuser)
+            mails_db.registerPickup(
+                code=data.get("code"),
+                pickupuser=data.get("user"),
+                responsableuser=users_db.getUserData(
+                    id=session.get('user_id')
+                )[1]
+            )
 
             return jsonify({
                 "head": "default",
-                "Message": "Registrado Com Sucesso!"
+                "Message": "Coleta registrada com sucesso!"
             }), 200
         else:
             raise Exception("Method not allowed")
@@ -439,13 +579,14 @@ def register_pickup():
 
 @app.route("/mails-api/manageUsers", methods=["GET", "POST"])
 @has_tab_access("manageUsers")
-@roles_required()
 def manage_user():
     try:
         if request.method == "GET":
             values = {
                 "users": users_db.getUsernames(),
-                "username_session": session.get("user_name")
+                "username_session": users_db.getUserData(
+                    id=session.get('user_id')
+                )[1]
             }
 
             return render_template(f"tabs/manageUsers.html", **values)
@@ -456,27 +597,29 @@ def manage_user():
             if data.get('submit') == "True":
                 userdata = users_db.getUserData(name=username)
 
-                if username.lower() == session.get("user_name").lower():
+                if not userdata:
+                    raise Exception("Usuario não encontrado!")
+
+                if username.lower() == users_db.getUserData(
+                    id=session.get("user_id")
+                )[1].lower():
                     raise Exception(
                         "Você não pode atualizar a sua propria conta!")
 
                 if int(data.get('status')) not in [1, 0, -2]:
                     raise Exception("Status invalido!")
 
-                if userdata:
-                    users_db.updateUser(
-                        id=userdata[0],
-                        name=username,
-                        role=data.get('role'),
-                        status=int(data.get('status'))
-                    )
+                users_db.updateUser(
+                    id=userdata[0],
+                    name=username,
+                    role=data.get('role'),
+                    status=int(data.get('status'))
+                )
 
-                    return jsonify({
-                        "head": "realert",
-                        "Message": "Cadastro atualizado com sucesso!"
-                    }), 200
-                else:
-                    raise Exception("Usuario não encontrado!")
+                return jsonify({
+                    "head": "realert",
+                    "Message": "Cadastro atualizado com sucesso!"
+                }), 200
             else:
                 userdata = users_db.getUserData(name=username)
 
@@ -484,10 +627,12 @@ def manage_user():
                     raise Exception("Usuario não encontrado!")
 
                 role = userdata[3]
-                status = userdata[4]
+                status = userdata[5]
 
                 values = {
-                    "username_session": session.get("user_name"),
+                    "username_session": users_db.getUserData(
+                        id=session.get('user_id')
+                    )[1],
                     "selected_user": username,
                     "users": users_db.getUsernames(),
                     "roles": users_db.getRoles(),
@@ -505,13 +650,12 @@ def manage_user():
             raise Exception("Method not allowed")
     except Exception as e:
         return jsonify({
-            "Message": f"Error: {e}"
+            "Message": f"{e}"
         }), 400
 
 
 @app.route("/mails-api/registerExit", methods=["GET", "POST"])
 @has_tab_access("registerExit")
-@roles_required(['almoxarife'])
 def register_exit():
     try:
         if request.method == "GET":
@@ -524,37 +668,12 @@ def register_exit():
             if "image" in request.files:
                 file = request.files["image"]
 
-                def fix_and_format_date(date_str):
-                    if not date_str:
-                        return datetime.now().strftime('%Y-%m-%d')
-
-                    clean_str = date_str.replace('I', '1').replace(
-                        'l', '1').replace('i', '1')
-                    clean_str = re.sub(r'[^0-9/]', '', clean_str)
-
-                    match = re.search(
-                        r'(\d{1,2})/(\d{1,2})/(\d{2,4})', clean_str)
-
-                    if match:
-                        day, month, year = match.groups()
-
-                        if len(year) == 2:
-                            year = "20" + year
-
-                        day = day.zfill(2)
-                        month = month.zfill(2)
-
-                        try:
-                            dt = datetime.strptime(
-                                f"{day}/{month}/{year}", "%d/%m/%Y")
-                            return dt.strftime('%Y-%m-%d')
-                        except ValueError:
-                            return datetime.now().strftime('%Y-%m-%d')
-
-                    return datetime.now().strftime('%Y-%m-%d')
-
-                tmp_name = ''.join(random.choices(
-                    (string.ascii_letters + string.digits), k=16))
+                tmp_name = ''.join(
+                    random.choices(
+                        (string.ascii_letters + string.digits),
+                        k=16
+                    )
+                )
 
                 tmp_path = FOLDER / "pictures" / "temp" / f"{tmp_name}.jpg"
 
@@ -565,16 +684,25 @@ def register_exit():
                 except:
                     raise Exception("Tipo de arquivo invalido!")
 
-                extraction = imgReader.extractInfo(tmp_path)
+                extraction = imgReader.extractInfo(
+                    path=tmp_path
+                )
 
                 result_format = str(extraction[0]).upper().replace(" ", "")
 
                 if "TERMODEDEVOLUCAOAOSCORREIOS" in result_format:
-                    token_match = re.search(r'ID:\s*([^\s]+)', extraction[0])
+                    token_match = re.search(
+                        pattern=r'ID:\s*([^\s]+)',
+                        string=extraction[0]
+                    )
+
                     extracted_token = token_match.group(
                         1) if token_match else ""
 
-                    mails = mails_db.getMails(mail_filter=extracted_token)
+                    mails = mails_db.getMails(
+                        mail_filter=extracted_token,
+                        column="pictureId"
+                    )
 
                     if mails:
                         for mail in mails:
@@ -614,7 +742,7 @@ def register_exit():
                          f'{extracted_token}.jpg').unlink(missing_ok=True)
 
                         return jsonify({
-                            "head": "default",
+                            "head": "realert",
                             "Message": "Devolução registrada com sucesso"
                         }), 200
                     else:
@@ -622,14 +750,22 @@ def register_exit():
                             "Nenhuma devolução pendente corresponde a esse documento!")
                 else:
                     raw_date_match = re.search(
-                        r'(?:DOCUMENTO|DATA)\s*:\s*([0-9Iil\/]{6,10})', result_format, re.IGNORECASE)
+                        pattern=r'(?:DOCUMENTO|DATA)\s*:\s*([0-9Iil\/]{6,10})',
+                        string=result_format,
+                        flags=re.IGNORECASE
+                    )
+
                     raw_date_str = raw_date_match.group(
                         1) if raw_date_match else None
 
                     if code := re.search(r'([A-Z]{2}\d{9}[A-Z]{2})', result_format):
                         code = code.group(0)
 
-                    if mail := mails_db.getMails(code, fetchOne=True) if code else None:
+                    if mail := mails_db.getMails(
+                        mail_filter=code,
+                        fetchOne=True,
+                        column="code"
+                    ) if code else None:
                         mail = None if mail[11] != "almox" else mail
 
                     values = {
@@ -648,17 +784,21 @@ def register_exit():
                 data = request.form
 
                 code = data.get("code", "")
+
+                if not validate_code(code):
+                    raise Exception("Codigo da correspondencia invalida!")
+
                 date = data.get("date", datetime.now().strftime('%Y-%m-%d'))
                 people = data.get("people", "")
 
-                if not validate_code(code):
-                    raise Exception("Codigo de rastreio invalido!")
+                if not date or not people:
+                    raise Exception("Valores insuficientes!")
 
                 if "final_submit" in data:
                     picture_id = data.get("picture_id").upper()
                     temp_pictureId = data.get("tmp_picture_id").upper()
 
-                    if not picture_id or not date or not people:
+                    if not picture_id:
                         raise Exception("Valores insuficientes!")
 
                     shutil.move(
@@ -671,7 +811,9 @@ def register_exit():
                         'status': 'shipped',
                         'deliveryDetail': people.title(),
                         'deliveredAt': datetime.strptime(date, "%Y-%m-%d"),
-                        'deliveredBy': session.get('user_name'),
+                        'deliveredBy': users_db.getUserData(
+                            id=session.get('user_id')
+                        )[1],
                         'pictureId': picture_id.upper()
                     }
 
@@ -679,11 +821,14 @@ def register_exit():
                         'code': code.upper()
                     }
 
-                    mails_db.updateMail(values=mailValues, search=mailSearch)
+                    mails_db.updateMail(
+                        values=mailValues,
+                        search=mailSearch
+                    )
 
                     return jsonify({
                         "head": "realert",
-                        "Message": "Registrado com sucesso!"
+                        "Message": "Registro efetuado com sucesso!"
                     }), 200
                 else:
                     tmp_id = data.get("tmp_id", "")
@@ -700,7 +845,7 @@ def register_exit():
                         "tmp_id": tmp_id,
                         "fetched_code": code,
                         "date": date,
-                        "potential_people": [people] if people else [""],
+                        "potential_people": [people],
                         "mail": mail
                     }
 
@@ -712,7 +857,7 @@ def register_exit():
             raise Exception("Method not allowed")
     except Exception as e:
         return jsonify({
-            "Message": f"Error: {e}"
+            "Message": f"{e}"
         }), 400
 
 
@@ -722,90 +867,114 @@ def set_password():
     try:
         data = request.form
         user_id = session.get('user_id')
-        user_name = session.get('user_name')
 
         userdata = users_db.getUserData(
-            name=session.get('user_name'),
-            id=session.get('user_id')
+            id=user_id
         )
 
-        if user_id != userdata[0] or user_name != userdata[1] or userdata[4] != 1:
+        if userdata.get("status") != 1:
             raise Exception("Permissão negada!")
 
-        password = generate_password_hash(data["password"], salt_length=64)
+        password = generate_password_hash(
+            password=data["password"],
+            salt_length=64
+        )
 
-        if (users_db.changePassword(password, user_id, user_name)):
-            return redirect(url_for('mails'))
+        if users_db.changePassword(
+            password=password,
+            userid=user_id
+        ):
+            return redirect(
+                location=url_for(
+                    endpoint='mails'
+                )
+            )
         else:
-            raise Exception("Erro inesperado")
+            raise Exception("Nao foi possivel alterar a senha!")
     except Exception as e:
         return jsonify({
-            "Message": f"Error: {e}"
+            "Message": f"{e}"
         }), 400
 
 
 @app.route("/mails-api/generateReturn", methods=["GET", "POST"])
 @has_tab_access("generateReturn")
-@roles_required(['almoxarife'])
 def generate_return():
     try:
-        def format_date(dateStr: str):
-            if not dateStr:
-                return ""
-            return "/".join(dateStr.split(' ')[0].split('-')[::-1])
-        
-        def get_priority_class(priority: str):
-            color = "bg-red-500/30" if priority == "Judicial" else "bg-green-500/30"
-            return f"{color} rounded-full px-2 font-semibold pb-0.5"
-            
         if request.method == "GET":
             if code := request.args.get("code"):
                 if not validate_code(code):
-                    raise Exception("Codigo de rastreio invalido!")
-                
-                if mail := mails_db.getMails(mail_filter=request.args.get("code").upper(), fetchOne=True, column="code"):
+                    raise Exception("Codigo de correspondencia invalida!")
+
+                if mail := mails_db.getMails(
+                    mail_filter=request.args.get("code").upper(),
+                    fetchOne=True,
+                    column="code"
+                ):
                     if mail[11] != "almox":
-                        raise Exception("Correspondencia indisponivel para devolução!")
+                        raise Exception(
+                            "Correspondencia indisponivel para devolução!")
+
                     return jsonify({
                         "head": "append_return",
                         "Message": mail[2]
                     }), 200
                 else:
                     raise Exception("Correspondencia não encontrada!")
-                
+
             values = {
-                "format_date": format_date,
-                "get_priority_class": get_priority_class
+                "format_date_function": format_date,
+                "get_priority_class_function": get_priority_class
             }
 
             if request.args.get("return_data"):
                 if request.args.get("return_data") != "{}":
-                    values["mails"] = mails_db.getMails(mail_filter=json.loads(request.args.get("return_data")))
+                    values["mails"] = mails_db.getMails(
+                        mail_filter=json.loads(
+                            s=request.args.get("return_data")
+                        )
+                    )
 
             return render_template(f"tabs/generateReturn.html", **values)
         elif request.method == "POST":
-            data = json.loads(request.form.get("values"))
+            data = json.loads(
+                s=request.form.get("values")
+            )
+
             formated_data = {}
 
             for code, reason in data.items():
-                input(reason)
-                if mail := mails_db.getMails(mail_filter=code, fetchOne=True, column="code"):
+                if mail := mails_db.getMails(
+                    mail_filter=code,
+                    fetchOne=True,
+                    column="code"
+                ):
                     if mail[11] != "almox":
-                        raise Exception("Correspondencia indisponivel para devolução encontrada!")
+                        raise Exception(
+                            "Correspondencia indisponivel encontrada. Geração cancelada!")
                     formated_data[code] = {
                         "name": mail[1],
                         "reason": reason
                     }
                 else:
-                    raise Exception("Correspondencia inexistente encontrada!")
-                
-            token = returnGen.generate_return(formated_data , session.get('user_name'))
+                    raise Exception(
+                        "Correspondencia inexistente encontrada. Geração cancelada!")
+
+            token = returnGen.generate_return(
+                data=formated_data,
+                username=users_db.getUserData(
+                    id=session.get('user_id')
+                )[1]
+            )
 
             for code, reason in data.items():
+
                 mailValues = {
                     'status': 'pre_returned',
                     'deliveryDetail': reason.title() if reason else "Desconhecido",
-                    'deliveredBy': session.get('user_name'),
+                    'deliveredBy': users_db.getUserData(
+                        id=session.get('user_id')
+                    )[1],
                     'pictureId': token
                 }
 
@@ -813,12 +982,15 @@ def generate_return():
                     'code': code
                 }
 
-                mails_db.updateMail(values=mailValues, search=mailSearch)
+                mails_db.updateMail(
+                    values=mailValues,
+                    search=mailSearch
+                )
 
-                return jsonify({
-                    "head": "print",
-                    "Message": token
-                }), 200
+            return jsonify({
+                "head": "print",
+                "Message": token
+            }), 200
         else:
             raise Exception("Method not allowed")
     except Exception as e:

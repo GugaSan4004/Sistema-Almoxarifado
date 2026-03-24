@@ -8,7 +8,7 @@
 
 
     <script src="/static/js/mails.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script> -->
     <link href="/static/css/main.css" rel="stylesheet">
 
     <link rel="icon" href="/static/imgs/logo/mail.svg" sizes="any" type="image/svg+xml">
@@ -18,7 +18,7 @@
     const ALLOWED_TABS = {{ allowed_tabs | tojson }};
 </script>
 
-<body class="bg-default-main grid grid-rows-[auto_1fr] h-screen relative">
+<body class="bg-light-default-main grid grid-rows-[auto_1fr] h-screen relative">
     <header class="grid grid-flow-col grid-cols-[1fr_auto_1fr] py-2 px-4 text-white select-none">
         <div class="flex items-center justify-start">
             <svg onclick="
@@ -37,10 +37,10 @@
 
         <div class="flex items-center gap-2 justify-end">
             <span class="bg-gray-600 pb-1 w-10 h-10 rounded-full flex justify-center items-center">
-                {{ session['user_name'][0] | upper if session['user_name'] else '?' }}
+                {{ user_name[0] | upper if user_name else '?' }}
             </span>
             <h1 class="h-7">
-                {% set name = session['user_name'].split() %}
+                {% set name = user_name.split() %}
                 {% if name|length > 2 and name[1].lower() in ['da', 'do', 'das', 'dos', 'de'] %}
                 {{ name[:3] | join(' ') }}
                 {% else %}
@@ -61,8 +61,15 @@
         </div>
     </header>
 
+    <aside id="toast" class="bg-white pl-2 pb-1 duration-400 select-none fixed flex flex-col justify-center rounded-md top-16 -right-1 z-40 h-24 w-80 border-l-5 text-black shadow-2xl transform transition-transform ease-in-out translate-x-full">
+        <h2 class="font-bold">{{ Status }}</h2>
+        <h1 class="text-sm text-gray-600">{{ Message }}</h1>
+        <div id="toast-progress" class="absolute bottom-0 left-0 h-1 bg-current w-full"></div>
+        <audio src="" id="sound-effect" hidden preload="metadata" type="audio/mp3"></audio>
+    </aside>
+
     <aside id="sidebar"
-        class="duration-400 select-none fixed block top-0 left-0 z-50 h-screen w-64 bg-default-main text-white shadow-2xl transform transition-transform ease-in-out border-r-4 -translate-x-full">
+        class="overflow-y-auto duration-400 select-none fixed block top-0 left-0 z-50 h-screen w-64 bg-light-default-main text-white shadow-2xl transform transition-transform ease-in-out border-r-4 -translate-x-full">
 
         <svg class="absolute select-none top-3 right-20" viewBox="0 0 531.549 316.44" height="60px">
             <g stroke="#1a1412" stroke-width="18" stroke-linejoin="round"
@@ -107,7 +114,7 @@
         </div>
 
         <div class="*:border-y-gray-400 *:select-none *:border-y *:cursor-pointer *:py-3.5 *:pl-2.5 *:transition-all *:duration-100 *:hover:border-l-6
-        flex flex-col gap-6 pt-24 overflow-y-auto" id="aside-options">
+        flex flex-col gap-6 pt-24" id="aside-options">
         </div>
     </aside>
 
@@ -120,9 +127,9 @@
         class="select-none fixed inset-0 z-40 flex flex-col items-center justify-center bg-black/50 backdrop-blur-xs pointer-events-auto">
         <div hidden class="fixed inset-0 z-50 flex flex-col justify-center" id="loading">
             <div class="relative flex items-center justify-center">
-                <div class="w-16 h-16 border-4 border-slate-200 border-t-default-main rounded-full animate-spin"></div>
+                <div class="w-16 h-16 border-4 border-slate-200 border-t-light-default-main rounded-full animate-spin"></div>
                 <div
-                    class="absolute w-8 h-8 border-4 border-slate-200 border-b-default-main rounded-full animate-reverse-spin">
+                    class="absolute w-8 h-8 border-4 border-slate-200 border-b-light-default-main rounded-full animate-reverse-spin">
                 </div>
             </div>
 

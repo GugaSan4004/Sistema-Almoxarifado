@@ -17,7 +17,7 @@
 <body class="flex bg-gray-200 justify-center items-center h-screen">
     <main class="grid bg-white grid-flow-col grid-cols-[1fr_11cm] h-140 w-270 rounded-md">
         <div id="message-body"
-            class="flex flex-col bg-default-main rounded-r-4xl rounded-l-md text-white items-center justify-center">
+            class="flex flex-col bg-light-default-main rounded-r-4xl rounded-l-md text-white items-center justify-center">
 
             <h3 class="font-bold text-4xl">Bem Vindo(a)!</h3>
             <h1 class="text-center m-8 text-gray-300">Faça login ao lado para poder acessar o software.</h1>
@@ -29,21 +29,21 @@
             <div>
                 <h2 id="your-name" class="pb-2">Nome</h2>
                 <input required minlength="4" placeholder="Coloque seu nome" name="username" id="" type="text"
-                    class="rounded-sm border border-gray-300 focus:ring-2 focus:ring-default-main bg-gray-200 h-11 w-full px-3">
+                    class="rounded-sm border border-gray-300 focus:ring-2 focus:ring-light-default-main bg-gray-200 h-11 w-full px-3">
             </div>
 
 
             <div>
                 <h2 id="your-pass" class="pb-2">Senha</h2>
                 <input required minlength="8" placeholder="Coloque sua senha" name="password" id="" type="password"
-                    class="rounded-sm border border-gray-300 focus:ring-2 focus:ring-default-main bg-gray-200 h-11 w-full px-3">
+                    class="rounded-sm border border-gray-300 focus:ring-2 focus:ring-light-default-main bg-gray-200 h-11 w-full px-3">
             </div>
             <button type="submit"
-                class="hover:text-default-secondary rounded-sm active:scale-95 cursor-pointer font-bold hover:text-default-green h-11 bg-default-main text-white">Entrar</button>
+                class="hover:text-light-default-secondary rounded-sm active:scale-95 cursor-pointer font-bold hover:text-default-green h-11 bg-light-default-main text-white">Entrar</button>
             <div class="text-gray-400 text-center">
                 Não tem uma conta?
                 <a href="/register"
-                    class="cursor-pointer hover:text-default-secondary font-bold hover:text-default-green">Registre-se.</a>
+                    class="cursor-pointer hover:text-light-default-secondary font-bold hover:text-default-green">Registre-se.</a>
             </div>
             {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
