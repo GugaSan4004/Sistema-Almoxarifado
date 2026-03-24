@@ -370,9 +370,9 @@ class init:
             self.connection: sqlite3.Connection = parent.connector
 
         def getUserData(self,
-                        name: str = None,
-                        id: str = None
-                        ) -> dict | None:
+            name: str = None,
+            id: int = None
+        ) -> dict | None:
             cur = self.connection.cursor()
 
             user_data = {
@@ -386,7 +386,7 @@ class init:
 
             allowed_tabs = []
 
-            if name and id:
+            if name and (id or id == 0):
                 cur.execute(
                     "SELECT * FROM users WHERE name LIKE ? OR id = ?",
                     (
@@ -401,7 +401,7 @@ class init:
                         name.title() + "%",
                     )
                 )
-            elif id:
+            elif id or id == 0:
                 cur.execute(
                     "SELECT * FROM users WHERE id = ?",
                     (
@@ -605,3 +605,68 @@ class init:
             cur.close()
 
             return
+
+        def getAllTabs(self) -> list:
+            cur = self.connection.cursor()
+            cur.execute("SELECT id, tab_name FROM tabs ORDER BY rowid ASC")
+            rows = cur.fetchall()
+            cur.close()
+            return [{"id": row[0], "name": row[1]} for row in rows]
+
+        def getAllRoles(self) -> list:
+            cur = self.connection.cursor()
+            cur.execute("SELECT name FROM roles ORDER BY id ASC")
+            rows = cur.fetchall()
+            cur.close()
+            return [row[0] for row in rows]
+
+        def getRolesWithIds(self) -> list:
+            cur = self.connection.cursor()
+            cur.execute("SELECT id, name FROM roles ORDER BY id ASC")
+            rows = cur.fetchall()
+            cur.close()
+            return rows
+
+        def getRoleByName(self, name: str):
+            cur = self.connection.cursor()
+            cur.execute("SELECT id FROM roles WHERE name = ?", (name.title(),))
+            row = cur.fetchone()
+            cur.close()
+            return row
+
+        def createRole(self, name: str, created_by: int) -> int:
+            cur = self.connection.cursor()
+            cur.execute(
+                "INSERT INTO roles (name, createdBy) VALUES (?, ?)",
+                (name.title(), created_by)
+            )
+            role_id = cur.lastrowid
+            self.connection.commit()
+            cur.close()
+            return role_id
+
+        def deleteRole(self, role_id: int) -> bool:
+            if role_id in [0, 1]:
+                return False
+
+            cur = self.connection.cursor()
+            cur.execute("DELETE FROM role_tabs WHERE role_id = ?", (role_id,))
+            cur.execute("DELETE FROM roles WHERE id = ?", (role_id,))
+            self.connection.commit()
+            cur.close()
+            return True
+
+        def updateRoleTabs(self, role_id: int, tab_ids: list) -> None:
+            cur = self.connection.cursor()
+            cur.execute("DELETE FROM role_tabs WHERE role_id = ?", (role_id,))
+            for t_id in tab_ids:
+                cur.execute("INSERT INTO role_tabs (role_id, tab_id) VALUES (?, ?)", (role_id, t_id))
+            self.connection.commit()
+            cur.close()
+
+        def checkRoleUsage(self, role_id: int) -> int:
+            cur = self.connection.cursor()
+            cur.execute("SELECT COUNT(id) FROM users WHERE role = ?", (role_id,))
+            count = cur.fetchone()[0]
+            cur.close()
+            return count

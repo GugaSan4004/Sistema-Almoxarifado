@@ -1,0 +1,121 @@
+<form action="/mails-api/manageRoles" method="post" id="manage_roles_form"
+    class="p-8 bg-white rounded-xl shadow-lg overflow-hidden border-t-4 border-light-default-main row-span-2 w-2xl self-center h-max justify-self-center *:w-full">
+    <h2 class="text-3xl! font-bold text-center text-light-default-main">Gerenciar Cargos</h2>
+
+    <input type="hidden" name="action" id="form_action" value="save">
+
+    <div class="mt-4 mb-8 flex items-center justify-center gap-x-3">
+        <h1 class="font-bold">Criar</h1>
+        <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" id="mode_toggle" name="mode" class="sr-only peer">
+            <div class="w-11 h-6 bg-light-default-main peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-light-default-secondary"></div>
+        </label>
+        <h1 class="font-bold">Editar</h1>
+    </div>
+
+    <div class="flex flex-col gap-y-3 mb-8" id="role_input_container">
+
+    </div>
+
+    <div class="h-[12vmax] overflow-y-auto border mb-8 border-gray-200 p-3 rounded-md bg-gray-50 flex flex-col">
+        <label class="block font-semibold text-gray-600 mb-2">Permissões de Abas</label>
+        <div class="grid grid-cols-2 gap-2" id="permissions_container">
+            {% for tab in all_tabs %}
+            <label class="flex items-center space-x-2 cursor-pointer">
+                <input type="checkbox" name="tabs" value="{{ tab['id'] }}"
+                    class="h-4 w-4 text-light-default-main transition duration-150 ease-in-out cursor-pointer tab-checkbox">
+                <span class="text-gray-700 select-none">{{ tab['name'] }}</span>
+            </label>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="flex gap-4">
+        <button type="button" id="delete_btn" onclick="submitDelete()"
+            class="hidden hover:bg-red-700 text-white cursor-pointer rounded-sm h-11 w-1/3 bg-red-600 font-bold py-3 shadow-md transform active:scale-95 transition-all uppercase tracking-wide">
+            Excluir
+        </button>
+        <button type="submit" id="submit_btn"
+            class="hover:text-light-default-secondary text-white cursor-pointer rounded-sm h-11 flex-1 bg-light-default-main font-bold py-3 shadow-md transform active:scale-95 transition-all uppercase tracking-wide flex items-center justify-center">
+            Enviar Alterações
+        </button>
+    </div>
+</form>
+
+<script>
+{
+    const allTabs = {{ all_tabs | tojson }};
+    const rolesData = {{ roles_data | tojson }};
+
+    const modeToggle = document.getElementById('mode_toggle');
+    const roleInputContainer = document.getElementById('role_input_container');
+    const tabCheckboxes = document.querySelectorAll('.tab-checkbox');
+    const formAction = document.getElementById('form_action');
+    const deleteBtn = document.getElementById('delete_btn');
+
+    function updatePermissions() {
+        const roleSelect = document.getElementById('role_select');
+        if (!roleSelect) return;
+        
+        const selectedRoleId = parseInt(roleSelect.value);
+        const selectedRole = rolesData.find(r => r.id === selectedRoleId);
+        
+        tabCheckboxes.forEach(cb => {
+            if (selectedRole && selectedRole.tabs.includes(cb.value)) {
+                cb.checked = true;
+            } else {
+                cb.checked = false;
+            }
+
+            if (selectedRoleId === 1) {
+                cb.disabled = true;
+                cb.checked = true;
+            } else {
+                cb.disabled = false;
+            }
+        });
+
+        if (selectedRoleId === 0 || selectedRoleId === 1) {
+            deleteBtn.classList.add('hidden');
+        } else {
+            deleteBtn.classList.remove('hidden');
+        }
+    }
+
+    function renderUI() {
+        if (modeToggle.checked) {
+            let options = rolesData.map(r => `<option value="${r.id}">${r.name}</option>`).join('');
+            roleInputContainer.innerHTML = `
+                <label for="role_select" class="font-semibold text-gray-700">Selecione o Cargo</label>
+                <select name="role_id" id="role_select" class="border border-gray-300 rounded-md p-2 bg-white" onchange="updatePermissions()">
+                    ${options}
+                </select>
+            `;
+            console.log("teste1")
+            updatePermissions();
+        } else {
+            roleInputContainer.innerHTML = `
+            <label for="role_name" class="font-semibold text-gray-700">Nome do Cargo</label>
+            <input type="text" name="role_name" id="role_name" class="border border-gray-300 rounded-md p-2" required>
+            `;
+            tabCheckboxes.forEach(cb => {
+                cb.checked = false;
+                cb.disabled = false;
+            });
+            console.log("teste2")
+            deleteBtn.classList.add('hidden');
+        }
+    }
+
+    window.submitDelete = function() {
+        if (confirm("Tem certeza que deseja excluir este cargo?")) {
+            formAction.value = "delete";
+            document.getElementById('manage_roles_form').requestSubmit();
+            setTimeout(() => formAction.value = "save", 100);
+        }
+    }
+
+    modeToggle.addEventListener('change', renderUI);
+    renderUI();
+}
+</script>

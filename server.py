@@ -1,4 +1,3 @@
-
 from PIL import Image
 from pathlib import Path
 from functools import wraps
@@ -10,7 +9,6 @@ from flask import Flask, abort, request, jsonify, render_template, send_from_dir
 
 import re
 import sys
-import json
 import psutil
 import random
 import string
@@ -458,7 +456,7 @@ def resume():
 
         if request.method == "GET":
             return render_template(
-                template_name_or_list="tabs/resume.html", 
+                template_name_or_list="tabs/resume.html",
                 **values
             )
         elif request.method == "POST":
@@ -556,14 +554,14 @@ def register_pickup():
 
             if not validate_code(data.get("code")):
                 raise Exception("Codigo de correspondencia invalida!")
-            
+
             mails_db.registerPickup(
                 code=data.get("code"),
                 pickupuserid=users_db.getUserData(
                     name=data.get("user")
                 ).get("id"),
                 responsableuserid=session.get('user_id')
-            )   
+            )
 
             return jsonify({
                 "head": "default",
@@ -603,7 +601,8 @@ def manage_user():
                 if username.lower() == users_db.getUserData(
                     id=session.get("user_id")
                 ).get("name").lower():
-                    raise Exception("Você não pode atualizar a sua propria conta!")
+                    raise Exception(
+                        "Você não pode atualizar a sua propria conta!")
 
                 if int(data.get('status')) not in [1, 0, -2]:
                     raise Exception("Status invalido!")
@@ -633,7 +632,7 @@ def manage_user():
                 role = userdata.get('role')
                 status = userdata.get('status')
 
-                values = {  
+                values = {
                     "username_session": users_db.getUserData(
                         id=session.get('user_id')
                     ).get("name"),
@@ -646,12 +645,11 @@ def manage_user():
                     }
                 }
 
-
                 return jsonify({
                     "head": "load",
                     "Message": f"{
                         render_template(
-                            "tabs/manageUsers.html", 
+                            "tabs/manageUsers.html",
                             **values
                         )
                     }"
@@ -717,7 +715,8 @@ def register_exit():
                     if mails:
                         for mail in mails:
                             if mail[11] != "pre_returned":
-                                raise Exception("Correspondencia divergente encontrada! Registro cancelado.")
+                                raise Exception(
+                                    "Correspondencia divergente encontrada! Registro cancelado.")
 
                         for mail in mails:
                             id = mail[0]
@@ -995,6 +994,88 @@ def generate_return():
             return jsonify({
                 "head": "print",
                 "Message": token
+            }), 200
+        else:
+            raise Exception("Method not allowed")
+    except Exception as e:
+        return jsonify({
+            "Message": f"{e}"
+        }), 400
+
+
+@app.route("/mails-api/manageRoles", methods=["GET", "POST"])
+@has_tab_access("manageRoles")
+def manage_roles():
+    try:
+        if request.method == "GET":
+            all_tabs = users_db.getAllTabs()
+            roles = users_db.getRolesWithIds()
+
+            roles_data = []
+            for r_id, r_name in roles:
+                allowed = users_db.getAllowedTabs(role_id=r_id)
+                tabs = [t["id"] for t in allowed] if allowed else []
+                if r_id == 1:
+                    tabs = [t["id"] for t in all_tabs]
+
+                roles_data.append({
+                    "id": r_id,
+                    "name": r_name,
+                    "tabs": tabs
+                })
+
+            return render_template("tabs/manageRoles.html", all_tabs=all_tabs, roles_data=roles_data)
+        elif request.method == "POST":
+            data = request.form
+            mode = data.get("mode")
+            is_edit_mode = mode == "on"
+
+            selected_tabs = request.form.getlist("tabs")
+            action = data.get("action", "save")
+
+            if is_edit_mode:
+                role_id = data.get("role_id")
+                if not role_id:
+                    raise Exception("Cargo não selecionado!")
+                role_id = int(role_id)
+
+                if action == "delete":
+                    if role_id in [0, 1]:
+                        raise Exception(
+                            "Cargos padrões não podem ser deletados!")
+
+                    if users_db.checkRoleUsage(role_id) > 0:
+                        raise Exception(
+                            "Existem usuários usando este cargo. Remova-os primeiro!")
+
+                    if users_db.deleteRole(role_id):
+                        message = "Cargo deletado com sucesso!"
+                    else:
+                        raise Exception("Falha ao deletar o cargo!")
+                else:
+                    if role_id == 1:
+                        raise Exception(
+                            "Não é possível editar as abas do Administrador!")
+                    users_db.updateRoleTabs(
+                        role_id=role_id, tab_ids=selected_tabs)
+                    message = "Permissões atualizadas com sucesso!"
+            else:
+                role_name = data.get("role_name", "").strip()
+                if not role_name:
+                    raise Exception("O nome do cargo não deve estar vazio!")
+
+                if users_db.getRoleByName(role_name):
+                    raise Exception("Um cargo com este nome já existe!")
+
+                new_role_id = users_db.createRole(
+                    name=role_name, created_by=session.get("user_id"))
+                users_db.updateRoleTabs(
+                    role_id=new_role_id, tab_ids=selected_tabs)
+                message = "Cargo criado com sucesso!"
+
+            return jsonify({
+                "head": "realert",
+                "Message": message
             }), 200
         else:
             raise Exception("Method not allowed")

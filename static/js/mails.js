@@ -10,6 +10,16 @@ let resume_orderDirection = "DESC";
 
 let return_data = {};
 
+const setInnerHTMLAndExecuteScripts = (element, html) => {
+    element.innerHTML = html;
+    Array.from(element.querySelectorAll("script")).forEach(oldScript => {
+        const newScript = document.createElement("script");
+        Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
+        newScript.appendChild(document.createTextNode(oldScript.innerHTML));
+        oldScript.parentNode.replaceChild(newScript, oldScript);
+    });
+}
+
 const loading = (on) => {
     const overlay = document.getElementById('overlay')
     const message = document.getElementById('loading')
@@ -77,7 +87,6 @@ const bindForms = () => {
     forms.forEach(form => {
         if (form.dataset.bound) return;
         form.dataset.bound = "true";
-
         form.addEventListener("submit", async (e) => {
             try {
                 loading(true)
@@ -89,6 +98,7 @@ const bindForms = () => {
                 let response
                 
                 const formData = new FormData(form);
+
                 if (method === "POST") {
                     response = await fetch(url, {
                         method,
@@ -144,7 +154,7 @@ const bindForms = () => {
 
                         break;
                     case "load":
-                        main.innerHTML = message;
+                        setInnerHTMLAndExecuteScripts(main, message);
                         bindForms(main);
                         break;
                     case "realert":
@@ -195,7 +205,7 @@ async function loadBody() {
             return
         }
 
-        main.innerHTML = result
+        setInnerHTMLAndExecuteScripts(main, result);
         bindForms(main)
     } else {
         const result = await response.json()
