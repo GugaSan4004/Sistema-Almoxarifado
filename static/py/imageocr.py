@@ -1,16 +1,18 @@
 import os
 import io
+import cv2
 import unicodedata
 
+from pyzbar.pyzbar import decode
 from azure.core.credentials import AzureKeyCredential
 
 class init:
     def __init__(self):
-        VEND = os.environ["VISION_ENDPOINT"]
-        TEND = os.environ["TEXT_ENDPOINT"]
+        VEND = os.getenv("VISION_ENDPOINT")
+        TEND = os.getenv("TEXT_ENDPOINT")
 
-        VKEY = os.environ["VISION_KEY"]
-        TKEY = os.environ["TEXT_KEY"]
+        VKEY = os.getenv("VISION_KEY")
+        TKEY = os.getenv("TEXT_KEY")
 
         from azure.ai.vision.imageanalysis import ImageAnalysisClient
         from azure.ai.vision.imageanalysis.models import VisualFeatures
@@ -67,4 +69,25 @@ class init:
                         names.append(ent.text)
         text = unicodedata.normalize('NFKD', text).encode('ASCII', 'ignore').decode('ASCII')
         return [text, names]
+
+    def decode_qrcode(self, path):
+        try:
+            img = cv2.imread(str(path))
+            if img is None:
+                return None
+            
+            decoded_objects = decode(img)
+            for obj in decoded_objects:
+                if obj.type == 'QRCODE':
+                    return obj.data.decode('utf-8')
+            
+            detector = cv2.QRCodeDetector()
+            data, _, _ = detector.detectAndDecode(img)
+            if data:
+                return data
+                
+            return None
+        except Exception as e:
+            print(f"Error decoding QR code: {e}")
+            return None
         # return ["testee", ["Maria 123", "teste 456"]]

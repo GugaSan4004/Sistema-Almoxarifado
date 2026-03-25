@@ -1,13 +1,11 @@
 <div class="-row-start-2 ml-4 mb-4 relative w-full md:w-80 h-max self-end items-center flex">
-    <span class="absolute inset-y-0 left-0 flex items-center pl-3">
-        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-        </svg>
-    </span>
-    <input onkeydown="handleFilterKeydown(event)"
-        class="block w-full rounded-sm px-10 py-2 border border-gray-300 leading-5 bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-light-default-main focus:border-light-default-main sm:text-sm transition duration-300 ease-in-out"
-        placeholder="Buscar por nome, código AR, data..." type="search" id="filter-input" value="{{ filter }}">
+    <form class="flex w-full" method="GET" action="mails-api/resume">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input id="filter" name="filter" type="text" placeholder="Pesquisar correspondências..."
+            class="flex-1 px-4 py-2 border border-slate-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-light-default-main focus:border-transparent"
+            value="{{ filter }}" onkeydown="handleFilterKeydown(event)">   
+        <button type="submit" hidden></button>
+    </form>
     <span onclick="setFilter('')" class="
                     cursor-pointer absolute inset-y-0 right-2 flex items-center pl-3
                 ">
@@ -110,17 +108,18 @@
         <form method="post" action="/mails-api/resume"
             class="*:truncate *:overflow-hidden *:whitespace-nowrap grid-cols-[1cm_1fr_3.2cm_0.5fr_1.6cm_2cm_2.2cm_3.7cm_2.5cm_2.8cm] {{ row_class }} duration-300 transition-colors grid gap-2 py-2 pr-2 border-b border-gray-700/50 hover:bg-light-default-main/15 items-center text-xs text-center *:text-ellipsis *:whitespace-nowrap *:overflow-hidden *:truncate"
             title="{{ row_title }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="id" value="{{ id }}">
             <span>{{ id }}</span>
-            <input class="text-start" name="name" value="{{ name }}" onchange="this.form.requestSubmit()"></input>
+            <input class="text-start" name="name" value="{{ name }}" onchange="handleSubmitOnChange(this)"></input>
             <span class="font-semibold">{{ code }}</span>
-            <input class="text-start" name="fantasy" value="{{ fantasy }}" onchange="this.form.requestSubmit()"></input>
-            <select name="type" onchange="this.form.requestSubmit()">
+            <input class="text-start" name="fantasy" value="{{ fantasy }}" onchange="handleSubmitOnChange(this)"></input>
+            <select name="type" onchange="handleSubmitOnChange(this)">
                 <option value="Caixa" {{ 'selected' if type=="Caixa" else '' }}>Caixa</option>
                 <option value="Carta" {{ 'selected' if type=="Carta" else '' }}>Carta</option>
                 <option value="Pacote" {{ 'selected' if type=="Pacote" else '' }}>Pacote</option>
             </select>
-            <select name="priority" class="{{ get_priority_class_function(priority) }} " onchange="this.form.requestSubmit()">
+            <select name="priority" class="{{ get_priority_class_function(priority) }} " onchange="handleSubmitOnChange(this)">
                 <option value="Simples" {{ 'selected' if priority=="Simples" else '' }}>Simples</option>
                 <option value="Judicial" {{ 'selected' if priority=="Judicial" else '' }}>Judicial</option>
             </select>
@@ -139,6 +138,7 @@
         </form>
         {% else %}
 
+
         <div class="*:truncate *:overflow-hidden *:whitespace-nowrap grid-cols-[1cm_1fr_3.2cm_0.5fr_1.6cm_2cm_2.2cm_3.7cm_2.5cm_2.8cm] {{ row_class }} duration-300 transition-colors grid gap-2 py-2 pr-2 border-b border-gray-700/50 hover:bg-light-default-main/15 items-center text-xs text-center *:text-ellipsis *:whitespace-nowrap *:overflow-hidden *:truncate"
             title="{{ row_title }}">
 
@@ -152,24 +152,7 @@
             <span>{{ receiverName if receiverName and status != "pre_returned" else "---" }}</span>
             <span>{{ format_date_function(exitDate) if exitDate else "---" }}</span>
 
-            <span onclick="if (event.target.dataset.img) {
-                    window.open(event.target.dataset.img, '_blank').focus();
-                }" onmouseover="resume_hoverTimeout = setTimeout(() => {
-                        const imgSrc = event.target.dataset.img;
-                        if (!imgSrc) return;
-
-                        if (document.getElementById('pp').src !== imgSrc) {
-                            changePreviewPicture(imgSrc);
-                        }
-
-                        updatePreviewPosition(event);
-                    }, 150);
-                " onmousemove="if (!document.getElementById('pp').className.split(' ').some(function (w) { return w === 'opacity-0' })) {
-                    updatePreviewPosition(event);
-                }
-                " onmouseleave="clearTimeout(resume_hoverTimeout);
-                    changePreviewPicture();
-                "
+            <span onclick="handlePhotoClick(event)" onmouseover="handlePhotoMouseOver(event)" onmousemove="handlePhotoMouseMove(event)" onmouseleave="handlePhotoMouseLeave()"
                 class="rounded-sm duration-300 transition-colors cursor-pointer bg-gray-600/20 hover:bg-light-default-main hover:text-white py-1"
                 {% if photoId and status !="pre_returned" %} data-img="/pictures/mails/{{ photoId }}.jpg"> {{ photoId }}
                 {% else %}
@@ -185,55 +168,3 @@
             src="" alt="Imagem não Encontrada!" id="pp">
     </div>
 </div>
-
-<script>
-    {
-        window.handleFilterKeydown = function(event) {
-            if(event.key == 'Enter') { 
-                setFilter(event.target.value);
-            }
-        }
-
-        window.toggleStats = function() {
-            resume_helpersOpen = !resume_helpersOpen;
-            const statsExtra = document.getElementById('stats-extra');
-            if (resume_helpersOpen) {
-                statsExtra.classList.remove('opacity-0', 'translate-x-10', 'pointer-events-none', 'max-w-0');
-                statsExtra.classList.add('opacity-100', 'translate-x-0', 'max-w-4xl');
-            } else {
-                statsExtra.classList.add('opacity-0', 'translate-x-10', 'pointer-events-none', 'max-w-0');
-                statsExtra.classList.remove('opacity-100', 'translate-x-0', 'max-w-4xl');
-            }
-        }
-
-        window.handlePhotoClick = function(event) {
-            if (event.target.dataset.img) {
-                window.open(event.target.dataset.img, '_blank').focus();
-            }
-        }
-
-        window.handlePhotoMouseOver = function(event) {
-            window.resume_hoverTimeout = setTimeout(() => {
-                const imgSrc = event.target.dataset.img;
-                if (!imgSrc) return;
-
-                if (document.getElementById('pp').src !== imgSrc) {
-                    changePreviewPicture(imgSrc);
-                }
-
-                updatePreviewPosition(event);
-            }, 150);
-        }
-
-        window.handlePhotoMouseMove = function(event) {
-            if (!document.getElementById('pp').className.split(' ').some(function (w) { return w === 'opacity-0' })) {
-                updatePreviewPosition(event);
-            }
-        }
-
-        window.handlePhotoMouseLeave = function() {
-            clearTimeout(window.resume_hoverTimeout);
-            changePreviewPicture();
-        }
-    }
-</script>

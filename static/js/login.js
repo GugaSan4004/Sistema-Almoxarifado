@@ -15,9 +15,11 @@ window.onload = function () {
 
         document.getElementById("your-pass").innerHTML = "Repetir Nova senha"
 
+        const csrfToken = document.querySelector('input[name="csrf_token"]').value;
         const form = document.querySelector("form")
         form.action = "/mails-api/set-userpass"
         form.innerHTML = `
+            <input type="hidden" name="csrf_token" value="${csrfToken}">
             <h1 class="font-bold text-4xl text-center">Alteraçao de Senha</h1>
             <input class="duration-300 transition-colors rounded-sm border border-gray-300 focus:ring-2 focus:ring-light-default-main 0 bg-gray-200 h-11 w-11/15 px-4" required minlength="8" placeholder="Senha" name="password" id="pwd"
             type="password">

@@ -334,6 +334,24 @@
   .row-start-2 {
     grid-row-start: 2;
   }
+  .container {
+    width: 100%;
+    @media (width >= 40rem) {
+      max-width: 40rem;
+    }
+    @media (width >= 48rem) {
+      max-width: 48rem;
+    }
+    @media (width >= 64rem) {
+      max-width: 64rem;
+    }
+    @media (width >= 80rem) {
+      max-width: 80rem;
+    }
+    @media (width >= 96rem) {
+      max-width: 96rem;
+    }
+  }
   .m-8 {
     margin: calc(var(--spacing) * 8);
   }
@@ -390,6 +408,9 @@
   }
   .hidden {
     display: none;
+  }
+  .inline {
+    display: inline;
   }
   .inline-flex {
     display: inline-flex;
@@ -1356,11 +1377,6 @@
     :is(& *) {
       --tw-ease: var(--ease-in-out);
       transition-timing-function: var(--ease-in-out);
-    }
-  }
-  .peer-checked\:bg-light-default-secondary {
-    &:is(:where(.peer):checked ~ *) {
-      background-color: var(--color-light-default-secondary);
     }
   }
   .peer-focus\:outline-none {

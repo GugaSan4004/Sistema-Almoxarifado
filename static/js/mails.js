@@ -10,15 +10,26 @@ let resume_orderDirection = "DESC";
 
 let return_data = {};
 
+const getCsrfToken = () => {
+    return document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+};
+
+
 const setInnerHTMLAndExecuteScripts = (element, html) => {
     element.innerHTML = html;
-    Array.from(element.querySelectorAll("script")).forEach(oldScript => {
-        const newScript = document.createElement("script");
-        Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
-        newScript.appendChild(document.createTextNode(oldScript.innerHTML));
-        oldScript.parentNode.replaceChild(newScript, oldScript);
-    });
 }
+
+const loadTabScript = (tabId) => {
+    const oldScript = document.getElementById('tab-specific-js');
+    if (oldScript) oldScript.remove();
+
+    const script = document.createElement('script');
+    script.id = 'tab-specific-js';
+    script.src = `/static/js/tabs/${tabId}.js`;
+    script.defer = true;
+    document.body.appendChild(script);
+}
+
 
 const loading = (on) => {
     const overlay = document.getElementById('overlay')
@@ -48,8 +59,9 @@ const triggerToast = (message, success) => {
     sound.currentTime = 0;
     sound.src = `/static/sounds/${success ? "success" : "error"}.mp3`;
     
-    document.querySelector("#toast > h2").innerHTML = success ? "Sucesso" : "Error";
-    document.querySelector("#toast > h1").innerHTML = message;
+    document.querySelector("#toast > h2").textContent = success ? "Sucesso" : "Error";
+    document.querySelector("#toast > h1").textContent = message;
+
 
     sound.play();
 
@@ -103,7 +115,10 @@ const bindForms = () => {
                 if (method === "POST") {
                     response = await fetch(url, {
                         method,
-                        body: formData
+                        body: formData,
+                        headers: {
+                            'X-CSRFToken': getCsrfToken()
+                        }
                     });
                 } else if (method === "GET") {
                     const params = new URLSearchParams(formData);
@@ -194,6 +209,9 @@ async function loadBody() {
 
     const response = await fetch(`/mails-api/${actualTabId}?${url.toString()}`, {
         method: "GET",
+        headers: {
+            'X-CSRFToken': getCsrfToken()
+        }
     });
 
     loading(false)
@@ -207,8 +225,10 @@ async function loadBody() {
         }
 
         setInnerHTMLAndExecuteScripts(main, result);
+        loadTabScript(actualTabId); // Load the tab-specific JS
         bindForms(main)
     } else {
+
         const result = await response.json()
         triggerToast(result.Message, false);
     }

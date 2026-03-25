@@ -8,12 +8,20 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask import Flask, abort, request, jsonify, render_template, send_from_directory, session, redirect, url_for, flash, make_response
 
 import re
+import os
 import sys
 import psutil
 import random
 import string
 import shutil
 import secrets
+import json
+from dotenv import load_dotenv
+from flask_wtf.csrf import CSRFProtect
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+
+load_dotenv()
 
 current_pid = sys.argv[0]
 for process in psutil.process_iter(['pid', 'cmdline']):
@@ -43,8 +51,15 @@ users_db = sqlite_core.init.users(sqlite)
 
 
 app = Flask(__name__)
-new_secret_key = secrets.token_urlsafe(32)
-app.secret_key = new_secret_key
+app.secret_key = os.getenv("SECRET_KEY", secrets.token_urlsafe(32))
+
+csrf = CSRFProtect(app)
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=["200 per day", "50 per hour"],
+    storage_uri="memory://",
+)
 
 Socket = SocketIO(
     app,
@@ -124,7 +139,7 @@ def roles_required(allowed_roles: list = []):
             )
 
             if user.get("role") not in allowed_roles:
-                return redirect(url_for('login'))
+                return redirect(url_for('logout'))
             return f(*args, **kwargs)
         return wrapper
     return decorator
@@ -233,6 +248,7 @@ def page_not_found(e):
 
 
 @app.route("/login", methods=["GET", "POST"])
+@limiter.limit("10 per minute")
 def login():
     if request.method == "GET":
         try:
@@ -255,7 +271,7 @@ def login():
 
             if not user:
                 flash(
-                    message="Usuário não encontrado!",
+                    message="Usuário ou senha incorreta!",
                     category="danger"
                 )
                 return redirect(
@@ -266,8 +282,8 @@ def login():
 
             if not check_password_hash(user.get("password"), data["password"]):
                 flash(
-                    message="Senha incorreta!",
-                    category="warning"
+                    message="Usuário ou senha incorreta!",
+                    category="danger"
                 )
                 return redirect(
                     location=url_for(
@@ -277,7 +293,7 @@ def login():
 
             if user.get("status") == -1:
                 flash(
-                    message="Essa conta ainda não está aprovada! <br> Peça ao administrador para ativa-la!",
+                    message="Essa conta ainda não está aprovada! Peça ao administrador para ativa-la!",
                     category="danger"
                 )
                 return redirect(
@@ -288,7 +304,7 @@ def login():
 
             if user.get("status") == -2:
                 flash(
-                    message="Sua conta foi desativada! <br> Consulte o administrador para mais informações!",
+                    message="Sua conta foi desativada! Consulte o administrador para mais informações!",
                     category="danger"
                 )
 
@@ -327,6 +343,7 @@ def login():
 
 
 @app.route("/register", methods=["GET", "POST"])
+@limiter.limit("5 per minute")
 def register():
     try:
         if request.method == "GET":
@@ -348,7 +365,7 @@ def register():
                     )
                 )
 
-            if len(password) > 8:
+            if len(password) < 8:
                 flash(
                     message="A senha deve ter pelo menos 8 caracteres!",
                     category="warning"
@@ -380,7 +397,7 @@ def register():
             )
 
             flash(
-                message="Cadastro efetuado com sucesso! <br> Peça para um administrador ativar sua conta!",
+                message="Cadastro efetuado com sucesso! Peça para um administrador ativar sua conta!",
                 category="success"
             )
             return redirect(
@@ -392,7 +409,7 @@ def register():
             raise Exception("Method not allowed")
     except Exception:
         flash(
-            message="Erro ao cadastrar. <br> Tente novamente mais tarde!",
+            message="Erro ao cadastrar. Tente novamente mais tarde!",
             category="danger"
         )
         return redirect(
@@ -450,7 +467,7 @@ def resume():
             "actualOrder": request.args.get("order", "id"),
             "is_admin": users_db.getUserData(
                 id=session.get('user_id')
-            ).get("role") == "admin"
+            ).get("role") == "Admin"
         }
 
         if request.method == "GET":
@@ -603,6 +620,12 @@ def manage_user():
                     raise Exception(
                         "Você não pode atualizar a sua propria conta!")
 
+                # IDOR Check: Ensure the user being edited is not an Admin unless requested by an Admin
+                target_user = users_db.getUserData(name=username)
+                if target_user.get("role") == "Admin" and users_db.getUserData(id=session.get("user_id")).get("role") != "Admin":
+                    raise Exception(
+                        "Permissão negada para editar um Administrador!")
+
                 if int(data.get('status')) not in [1, 0, -2]:
                     raise Exception("Status invalido!")
 
@@ -698,13 +721,14 @@ def register_exit():
                 result_format = str(extraction[0]).upper().replace(" ", "")
 
                 if "TERMODEDEVOLUCAOAOSCORREIOS" in result_format:
-                    token_match = re.search(
-                        pattern=r'ID:\s*([^\s]+)',
-                        string=extraction[0]
-                    )
-
-                    extracted_token = token_match.group(
-                        1) if token_match else ""
+                    extracted_token = imgReader.decode_qrcode(tmp_path)
+                    
+                    if not extracted_token:
+                        token_match = re.search(
+                            pattern=r'ID:\s*([^\s]+)',
+                            string=extraction[0]
+                        )
+                        extracted_token = token_match.group(1) if token_match else ""
 
                     mails = mails_db.getMails(
                         mail_filter=extracted_token,
@@ -754,7 +778,7 @@ def register_exit():
                         }), 200
                     else:
                         raise Exception(
-                            "Nenhuma devolução pendente corresponde a esse documento!")
+                            f"Nenhuma devolução pendente corresponde a esse documento! ID: {extracted_token}")
                 else:
                     raw_date_match = re.search(
                         pattern=r'(?:DOCUMENTO|DATA)\s*:\s*([0-9Iil\/]{6,10})',
@@ -802,8 +826,12 @@ def register_exit():
                     raise Exception("Valores insuficientes!")
 
                 if "final_submit" in data:
-                    picture_id = data.get("picture_id").upper()
-                    temp_pictureId = data.get("tmp_picture_id").upper()
+                    from werkzeug.utils import secure_filename
+
+                    picture_id = secure_filename(
+                        data.get("picture_id").upper())
+                    temp_pictureId = secure_filename(
+                        data.get("tmp_picture_id").upper())
 
                     if not picture_id:
                         raise Exception("Valores insuficientes!")
@@ -867,6 +895,7 @@ def register_exit():
 
 
 @app.route("/mails-api/set-userpass", methods=["POST"])
+@limiter.limit("3 per minute")
 @login_required
 def set_password():
     try:
@@ -985,10 +1014,10 @@ def generate_return():
                     'code': code
                 }
 
-                mails_db.updateMail(
-                    values=mailValues,
-                    search=mailSearch
-                )
+                # mails_db.updateMail(
+                #     values=mailValues,
+                #     search=mailSearch
+                # )
 
             return jsonify({
                 "head": "print",
@@ -1032,7 +1061,6 @@ def manage_roles():
             selected_tabs = request.form.getlist("tabs")
             action = data.get("form_action", "save")
 
-
             if is_edit_mode:
                 role_id = data.get("role_id")
                 if not role_id:
@@ -1041,10 +1069,12 @@ def manage_roles():
 
                 if action == "delete":
                     if role_id in [0]:
-                        raise Exception("Cargos padrões não podem ser deletados!")
+                        raise Exception(
+                            "Cargos padrões não podem ser deletados!")
 
                     if users_db.checkRoleUsage(role_id) > 0:
-                        raise Exception("Existem usuários usando este cargo. Remova-os primeiro!")
+                        raise Exception(
+                            "Existem usuários usando este cargo. Remova-os primeiro!")
 
                     if users_db.deleteRole(role_id):
                         message = "Cargo deletado com sucesso!"

@@ -1,6 +1,8 @@
 <form action="/mails-api/registerNewMail" method="post"
     class="p-8 bg-white rounded-xl shadow-lg overflow-hidden border-t-4 border-light-default-main row-span-2 w-[70vmax] self-center h-[40vmax] gap-x-3 justify-self-center grid grid-cols-2 *:w-full *:mb-8">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <h2 class="col-span-2 text-3xl! mt-8 font-bold text-center text-light-default-main">Cadastro de Correspondencia</h2>
+
     <div>
         <label class="block font-semibold text-gray-600 mb-1">Destinatario Completo</label>
         <input name="sender" type="text" minlength="4" required autocomplete="off"

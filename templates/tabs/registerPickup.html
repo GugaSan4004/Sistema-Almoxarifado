@@ -1,6 +1,8 @@
 <form action="/mails-api/registerPickup" method="post"
     class="p-8 bg-white rounded-xl shadow-lg overflow-hidden border-t-4 border-light-default-main row-span-2 w-[40vmax] self-center h-[30vmax] gap-x-3 justify-self-center grid *:w-full *:mb-8">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <h2 class="text-3xl! mt-8 font-bold text-center text-light-default-main">Registro de Coleta</h2>
+
     <div>
         <label class="block font-semibold text-gray-600 mb-1">Codigo de Rastreio da Correspondencia</label>
         <input name="code" type="text" minlength="4" required placeholder="Ex: AB123456789BR"

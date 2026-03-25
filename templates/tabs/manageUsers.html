@@ -1,9 +1,10 @@
 <form action="/mails-api/manageUsers" method="post"
     class="p-8 bg-white rounded-xl shadow-lg overflow-hidden border-t-4 border-light-default-main row-span-2 w-[40vmax] self-center h-[30vmax] gap-x-3 justify-self-center grid *:w-full *:mb-8">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <h2 class="text-3xl! col-span-2 mt-8 font-bold text-center text-light-default-main">Gerenciar Usuario</h2>
     <div class="col-span-2">
         <label class="block font-semibold text-gray-600 mb-1">Nome do Usuario</label>
-        <select onchange="this.form.requestSubmit()"
+        <select onchange="handleUserChange(this)"
             class="rounded-sm w-full px-4 py-2 border border-gray-300 focus:ring-2 focus:ring-light-default-main focus:border-transparent outline-none transition-all"
             name="username">
             <option {{ '' if selected_user else 'selected' }} disabled>Selecione um Usuario</option>
@@ -40,7 +41,7 @@
 
     <button
         {% if userdata %}
-            onclick="document.getElementById('submit').value='True';"
+            onclick="prepareUserUpdate()"
         {% else %}
             disabled
         {% endif %}
@@ -48,4 +49,4 @@
         class="col-span-2 disabled:bg-light-default-main/40 enabled:hover:text-light-default-secondary enabled:text-white cursor-pointer disabled:text-black rounded-sm h-11 w-full bg-light-default-main text-white font-bold py-3 shadow-md transform active:scale-95 transition-all uppercase tracking-wide mt-4">Atualizar
         Cadastro</button>
 
-</form>
+</form>

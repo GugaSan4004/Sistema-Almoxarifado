@@ -18,6 +18,7 @@
     <button onclick="prepareExitValues()"
         class="cursor-pointer h-11 disabled:bg-light-default-main/40 enabled:hover:text-light-default-secondary bg-light-default-main enabled:text-white disabled:text-black w-70 font-bold py-3 shadow-md transform active:scale-95 transition-all uppercase tracking-wide mt-4 rounded-sm"
         type="submit">Registrar Saida</button>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <input type="hidden" name="code" value="{{ code }}">
     <input type="hidden" id="sub_people" name="people" value="">
     <input type="hidden" id="sub_date" name="date" value="">
@@ -42,9 +43,10 @@
     <div class="flex flex-col">
         <form method="post" action="/mails-api/registerExit"
             class="*:truncate *:overflow-hidden *:whitespace-nowrap grid-cols-[1cm_1fr_3.2cm_0.5fr_5.2cm_3.7cm_2.8cm]  duration-300 transition-colors grid gap-2 py-2 pr-2 border-b border-gray-700/50 hover:bg-light-default-main/15 items-center text-xs text-center *:text-ellipsis *:whitespace-nowrap *:overflow-hidden *:truncate">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <span>{{id}}</span>
             <span class="text-start">{{name}}</span>
-            <input required name="code" value="{{ code }}"
+            <input required name="code" value="{{ code }}" autocomplete="off"
                 class="font-semibold text-center rounded-sm p-1 border border-gray-300 focus:ring-2 focus:ring-light-default-main outline-none appearance-none bg-white"></input>
             <span class="text-start">{{fantasy}}</span>
             <input id="inp_people" name="people" type="text" value="{{ potential_people[0] }}"
@@ -61,12 +63,3 @@
 
     </div>
 </div>
-
-<script>
-    {
-        window.prepareExitValues = function() {
-            document.getElementById('sub_people').value = document.getElementById('inp_people').value;
-            document.getElementById('sub_date').value = document.getElementById('inp_date').value;
-        }
-    }
-</script>
