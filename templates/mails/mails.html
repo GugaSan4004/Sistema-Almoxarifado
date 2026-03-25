@@ -21,10 +21,7 @@
 <body class="bg-light-default-main grid grid-rows-[auto_1fr] h-screen relative">
     <header class="grid grid-flow-col grid-cols-[1fr_auto_1fr] py-2 px-4 text-white select-none">
         <div class="flex items-center justify-start">
-            <svg onclick="
-                document.getElementById('overlay').hidden = false;
-                sidebar.classList.toggle('-translate-x-full');
-            " class="w-7 cursor-pointer hover:scale-110 duration-200" viewBox="0 25 70 50">
+            <svg onclick="toggleSidebar(true)" class="w-7 cursor-pointer hover:scale-110 duration-200" viewBox="0 25 70 50">
                 <path class="stroke-8 stroke-white" d="M 0,30 H 70" />
                 <path class="stroke-8 stroke-white" d="M 0,50 H 70" />
                 <path class="stroke-8 stroke-white" d="M 0,70 H 70" />
@@ -103,10 +100,7 @@
             </g>
         </svg>
 
-        <div onclick="
-            document.getElementById('overlay').hidden = true;
-            sidebar.classList.toggle('-translate-x-full');
-        " class="hover:scale-110 absolute top-0 right-0 cursor-pointer duration-200">
+        <div onclick="toggleSidebar(false)" class="hover:scale-110 absolute top-0 right-0 cursor-pointer duration-200">
             <svg class="w-7 h-7 cursor-pointer" viewBox="0 25 70 50">
                 <path class="stroke-8 stroke-white" d="M 15,30 L 55,70" />
                 <path class="stroke-8 stroke-white" d="M 15,70 L 55,30" />
@@ -118,12 +112,7 @@
         </div>
     </aside>
 
-    <div id="overlay" onclick="
-            if(event.target.id == 'overlay') {
-                event.target.hidden = true;
-                sidebar.classList.toggle('-translate-x-full');
-            }
-        " hidden
+    <div id="overlay" onclick="handleOverlayClick(event)" hidden
         class="select-none fixed inset-0 z-40 flex flex-col items-center justify-center bg-black/50 backdrop-blur-xs pointer-events-auto">
         <div hidden class="fixed inset-0 z-50 flex flex-col justify-center" id="loading">
             <div class="relative flex items-center justify-center">
@@ -147,6 +136,22 @@
     <img id="img-preview"
         class="select-none absolute top-0 left-0 pointer-events-none z-50 transition-opacity duration-300 ease-in-out opacity-0 max-h-70 bg-white"
         src="" alt="Imagem não Encontrada!">
+
+    <script>
+        {
+            window.toggleSidebar = function(showOverlay) {
+                document.getElementById('overlay').hidden = !showOverlay;
+                document.getElementById('sidebar').classList.toggle('-translate-x-full');
+            }
+
+            window.handleOverlayClick = function(event) {
+                if(event.target.id == 'overlay') {
+                    event.target.hidden = true;
+                    document.getElementById('sidebar').classList.toggle('-translate-x-full');
+                }
+            }
+        }
+    </script>
 </body>
 
 </html>

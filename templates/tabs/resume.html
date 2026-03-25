@@ -5,7 +5,7 @@
                 d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
         </svg>
     </span>
-    <input onkeydown="if(event.key == 'Enter') { setFilter(event.target.value) }"
+    <input onkeydown="handleFilterKeydown(event)"
         class="block w-full rounded-sm px-10 py-2 border border-gray-300 leading-5 bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-light-default-main focus:border-light-default-main sm:text-sm transition duration-300 ease-in-out"
         placeholder="Buscar por nome, código AR, data..." type="search" id="filter-input" value="{{ filter }}">
     <span onclick="setFilter('')" class="
@@ -52,19 +52,7 @@
             <p class="font-semibold">{{ totals.almox }}</p>
         </div>
     </div>
-    <div onclick="
-        resume_helpersOpen = !resume_helpersOpen;
-
-        const statsExtra = document.getElementById('stats-extra');
-
-        if (resume_helpersOpen) {
-            statsExtra.classList.remove('opacity-0', 'translate-x-10', 'pointer-events-none', 'max-w-0');
-            statsExtra.classList.add('opacity-100', 'translate-x-0', 'max-w-4xl');
-        } else {
-            statsExtra.classList.add('opacity-0', 'translate-x-10', 'pointer-events-none', 'max-w-0');
-            statsExtra.classList.remove('opacity-100', 'translate-x-0', 'max-w-4xl');
-        }
-    "
+    <div onclick="toggleStats()"
         class="bg-light-default-main p-4 rounded-sm shadow-md w-27 cursor-pointer transition duration-300 hover:bg-blue-600 z-10 h-full flex justify-center flex-col">
         <p class="text-xs font-bold text-blue-100 uppercase tracking-wider">Total</p>
         <p data-field="total" class="text-2xl font-black text-white">{{ totals.total }}</p>
@@ -140,24 +128,7 @@
             <span>{{ receiverName if receiverName and status != 'pre_returned' else '---' }}</span>
             <span>{{ format_date_function(exitDate) if exitDate else "---" }}</span>
 
-            <span onclick="if (event.target.dataset.img) {
-                    window.open(event.target.dataset.img, '_blank').focus();
-                }" onmouseover="resume_hoverTimeout = setTimeout(() => {
-                        const imgSrc = event.target.dataset.img;
-                        if (!imgSrc) return;
-
-                        if (document.getElementById('pp').src !== imgSrc) {
-                            changePreviewPicture(imgSrc);
-                        }
-
-                        updatePreviewPosition(event);
-                    }, 150);
-                " onmousemove="if (!document.getElementById('pp').className.split(' ').some(function (w) { return w === 'opacity-0' })) {
-                    updatePreviewPosition(event);
-                }
-                " onmouseleave="clearTimeout(resume_hoverTimeout);
-                    changePreviewPicture();
-                "
+            <span onclick="handlePhotoClick(event)" onmouseover="handlePhotoMouseOver(event)" onmousemove="handlePhotoMouseMove(event)" onmouseleave="handlePhotoMouseLeave()"
                 class="rounded-sm duration-300 transition-colors cursor-pointer bg-gray-600/20 hover:bg-light-default-main hover:text-white py-1"
                 {% if photoId and status !="pre_returned" %} data-img="/pictures/mails/{{ photoId }}.jpg"> {{ photoId }}
                 {% else %}
@@ -214,3 +185,55 @@
             src="" alt="Imagem não Encontrada!" id="pp">
     </div>
 </div>
+
+<script>
+    {
+        window.handleFilterKeydown = function(event) {
+            if(event.key == 'Enter') { 
+                setFilter(event.target.value);
+            }
+        }
+
+        window.toggleStats = function() {
+            resume_helpersOpen = !resume_helpersOpen;
+            const statsExtra = document.getElementById('stats-extra');
+            if (resume_helpersOpen) {
+                statsExtra.classList.remove('opacity-0', 'translate-x-10', 'pointer-events-none', 'max-w-0');
+                statsExtra.classList.add('opacity-100', 'translate-x-0', 'max-w-4xl');
+            } else {
+                statsExtra.classList.add('opacity-0', 'translate-x-10', 'pointer-events-none', 'max-w-0');
+                statsExtra.classList.remove('opacity-100', 'translate-x-0', 'max-w-4xl');
+            }
+        }
+
+        window.handlePhotoClick = function(event) {
+            if (event.target.dataset.img) {
+                window.open(event.target.dataset.img, '_blank').focus();
+            }
+        }
+
+        window.handlePhotoMouseOver = function(event) {
+            window.resume_hoverTimeout = setTimeout(() => {
+                const imgSrc = event.target.dataset.img;
+                if (!imgSrc) return;
+
+                if (document.getElementById('pp').src !== imgSrc) {
+                    changePreviewPicture(imgSrc);
+                }
+
+                updatePreviewPosition(event);
+            }, 150);
+        }
+
+        window.handlePhotoMouseMove = function(event) {
+            if (!document.getElementById('pp').className.split(' ').some(function (w) { return w === 'opacity-0' })) {
+                updatePreviewPosition(event);
+            }
+        }
+
+        window.handlePhotoMouseLeave = function() {
+            clearTimeout(window.resume_hoverTimeout);
+            changePreviewPicture();
+        }
+    }
+</script>

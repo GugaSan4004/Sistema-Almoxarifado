@@ -622,7 +622,7 @@ class init:
 
         def getRolesWithIds(self) -> list:
             cur = self.connection.cursor()
-            cur.execute("SELECT id, name FROM roles ORDER BY id ASC")
+            cur.execute("SELECT id, name FROM roles WHERE id != 1 ORDER BY id ASC")
             rows = cur.fetchall()
             cur.close()
             return rows

@@ -2,13 +2,15 @@
     class="p-8 bg-white rounded-xl shadow-lg overflow-hidden border-t-4 border-light-default-main row-span-2 w-2xl self-center h-max justify-self-center *:w-full">
     <h2 class="text-3xl! font-bold text-center text-light-default-main">Gerenciar Cargos</h2>
 
-    <input type="hidden" name="action" id="form_action" value="save">
+    <input type="hidden" name="form_action" id="form_action" value="save">
 
     <div class="mt-4 mb-8 flex items-center justify-center gap-x-3">
         <h1 class="font-bold">Criar</h1>
         <label class="relative inline-flex items-center cursor-pointer">
             <input type="checkbox" id="mode_toggle" name="mode" class="sr-only peer">
-            <div class="w-11 h-6 bg-light-default-main peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-light-default-secondary"></div>
+            <div
+                class="w-11 h-6 bg-light-default-main peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all">
+            </div>
         </label>
         <h1 class="font-bold">Editar</h1>
     </div>
@@ -43,79 +45,70 @@
 </form>
 
 <script>
-{
-    const allTabs = {{ all_tabs | tojson }};
-    const rolesData = {{ roles_data | tojson }};
+    {
+        const allTabs = {{ all_tabs | tojson }};
+        const rolesData = {{ roles_data | tojson }};
 
-    const modeToggle = document.getElementById('mode_toggle');
-    const roleInputContainer = document.getElementById('role_input_container');
-    const tabCheckboxes = document.querySelectorAll('.tab-checkbox');
-    const formAction = document.getElementById('form_action');
-    const deleteBtn = document.getElementById('delete_btn');
+        const modeToggle = document.getElementById('mode_toggle');
+        const roleInputContainer = document.getElementById('role_input_container');
+        const tabCheckboxes = document.querySelectorAll('.tab-checkbox');
+        const formAction = document.getElementById('form_action');
+        const deleteBtn = document.getElementById('delete_btn');
 
-    function updatePermissions() {
-        const roleSelect = document.getElementById('role_select');
-        if (!roleSelect) return;
-        
-        const selectedRoleId = parseInt(roleSelect.value);
-        const selectedRole = rolesData.find(r => r.id === selectedRoleId);
-        
-        tabCheckboxes.forEach(cb => {
-            if (selectedRole && selectedRole.tabs.includes(cb.value)) {
-                cb.checked = true;
-            } else {
-                cb.checked = false;
-            }
+        function updatePermissions() {
+            const roleSelect = document.getElementById('role_select');
+            if (!roleSelect) return;
 
-            if (selectedRoleId === 1) {
-                cb.disabled = true;
-                cb.checked = true;
-            } else {
-                cb.disabled = false;
-            }
-        });
+            const selectedRoleId = parseInt(roleSelect.value);
+            const selectedRole = rolesData.find(r => r.id === selectedRoleId);
 
-        if (selectedRoleId === 0 || selectedRoleId === 1) {
-            deleteBtn.classList.add('hidden');
-        } else {
-            deleteBtn.classList.remove('hidden');
-        }
-    }
-
-    function renderUI() {
-        if (modeToggle.checked) {
-            let options = rolesData.map(r => `<option value="${r.id}">${r.name}</option>`).join('');
-            roleInputContainer.innerHTML = `
-                <label for="role_select" class="font-semibold text-gray-700">Selecione o Cargo</label>
-                <select name="role_id" id="role_select" class="border border-gray-300 rounded-md p-2 bg-white" onchange="updatePermissions()">
-                    ${options}
-                </select>
-            `;
-            console.log("teste1")
-            updatePermissions();
-        } else {
-            roleInputContainer.innerHTML = `
-            <label for="role_name" class="font-semibold text-gray-700">Nome do Cargo</label>
-            <input type="text" name="role_name" id="role_name" class="border border-gray-300 rounded-md p-2" required>
-            `;
             tabCheckboxes.forEach(cb => {
-                cb.checked = false;
-                cb.disabled = false;
+                if (selectedRole && selectedRole.tabs.includes(cb.value)) {
+                    cb.checked = true;
+                } else {
+                    cb.checked = false;
+                }
             });
-            console.log("teste2")
-            deleteBtn.classList.add('hidden');
-        }
-    }
 
-    window.submitDelete = function() {
-        if (confirm("Tem certeza que deseja excluir este cargo?")) {
-            formAction.value = "delete";
-            document.getElementById('manage_roles_form').requestSubmit();
-            setTimeout(() => formAction.value = "save", 100);
+            if (selectedRoleId === 0) {
+                deleteBtn.classList.add('hidden');
+            } else {
+                deleteBtn.classList.remove('hidden');
+            }
         }
-    }
 
-    modeToggle.addEventListener('change', renderUI);
-    renderUI();
-}
+        function renderUI() {
+            if (modeToggle.checked) {
+                let options = rolesData.map(r => `<option value="${r.id}">${r.name}</option>`).join('');
+                roleInputContainer.innerHTML = `
+                    <label for="role_select" class="font-semibold text-gray-700">Selecione o Cargo</label>
+                    <select name="role_id" id="role_select" class="border border-gray-300 rounded-md p-2 bg-white" onchange="updatePermissions()">
+                        ${options}
+                    </select>
+                `;
+                updatePermissions();
+            } else {
+                roleInputContainer.innerHTML = `
+                <label for="role_name" class="font-semibold text-gray-700">Nome do Cargo</label>
+                <input type="text" name="role_name" id="role_name" class="border border-gray-300 rounded-md p-2" required>
+                `;
+                tabCheckboxes.forEach(cb => {
+                    cb.checked = false;
+                    cb.disabled = false;
+                });
+                deleteBtn.classList.add('hidden');
+            }
+        }
+
+        window.submitDelete = function () {
+            if (confirm("Tem certeza que deseja excluir este cargo?")) {
+                formAction.value = "delete";
+                document.getElementById('manage_roles_form').requestSubmit();
+                setTimeout(() => formAction.value = "save", 100);
+            }
+        }
+
+        modeToggle.addEventListener('change', renderUI);
+        renderUI();
+    }
 </script>

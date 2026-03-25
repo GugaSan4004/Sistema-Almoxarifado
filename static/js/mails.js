@@ -96,7 +96,8 @@ const bindForms = () => {
                 let url = form.action;
                 let method = form.method.toUpperCase();
                 let response
-                
+            
+
                 const formData = new FormData(form);
 
                 if (method === "POST") {
@@ -111,7 +112,7 @@ const bindForms = () => {
                         method
                     });
                 }
-
+                
                 const result = await response.json();
                 
                 const message = result.Message;
@@ -278,7 +279,7 @@ window.onload = () => {
     main = document.querySelector("main")
 
     const sidebar_opt = document.getElementById("aside-options")
-    
+
     ALLOWED_TABS.forEach(tab => {
         const span = document.createElement("a")
         span.id = tab.id
@@ -301,5 +302,7 @@ window.onload = () => {
         sidebar_opt.appendChild(span)
     })
 
-    loadBody()
+    if (ALLOWED_TABS) {
+        loadBody()
+    }
 };

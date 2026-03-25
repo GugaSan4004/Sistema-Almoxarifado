@@ -8,7 +8,7 @@
 {% set potential_people = values_data.potential_people %}
 {% set id, name, code, fantasy, type, _, _, _, _, _, _, _, _, _, _, _ = mail_data %}
 
-<img src="/pictures/temp/{{ tmp_id }}.jpg" alt="Preview" onclick="console.log('Clic'); window.open(event.target.src, '_blank').focus();"
+<img src="/pictures/temp/{{ tmp_id }}.jpg" alt="Preview" onclick="openPreviewImage(event)"
     class="hover:scale-120 transition-all active:scale-95 cursor-pointer h-[50vh] w-[30vh] m-8 mx-auto rounded-sm shadow-lg border border-slate-200 justify-self-center">
 
 <div
@@ -51,17 +51,7 @@
 
 <form action="/mails-api/registerExit"
     class="w-full flex flex-col space-y-4 items-center row-span-2 self-center justify-self-center" method="post">
-    <div onclick="document.getElementById('file_input').click();" ondragover="
-                event.preventDefault();
-                event.target.classList.add('border-blue-500', 'bg-blue-50');"
-        ondragleave="event.target.classList.remove('border-blue-500', 'bg-blue-50');" ondrop="event.preventDefault();
-                event.target.classList.remove('border-blue-500', 'bg-blue-50');
-                
-                const files = event.dataTransfer.files;
-                if (files.length > 0) {
-                    document.getElementById('file_input').files = files;
-                    showPreview(files[0]);
-                }" id="drop-zone"
+    <div onclick="document.getElementById('file_input').click();" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)" id="drop-zone"
         class="relative max-w-md border-4 border-dashed border-slate-300 rounded-sm p-8 text-center cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-all min-h-75 flex items-center justify-center self-center">
 
         <input onchange="showPreview(event.target.files[0])" type="file" id="file_input" name="image"
@@ -83,3 +73,31 @@
 </form>
 
 {% endif %}
+
+<script>
+    {
+        window.openPreviewImage = function(event) {
+            console.log('Clic');
+            window.open(event.target.src, '_blank').focus();
+        }
+
+        window.handleDragOver = function(event) {
+            event.preventDefault();
+            event.target.classList.add('border-blue-500', 'bg-blue-50');
+        }
+
+        window.handleDragLeave = function(event) {
+            event.target.classList.remove('border-blue-500', 'bg-blue-50');
+        }
+
+        window.handleDrop = function(event) {
+            event.preventDefault();
+            event.target.classList.remove('border-blue-500', 'bg-blue-50');
+            const files = event.dataTransfer.files;
+            if (files.length > 0) {
+                document.getElementById('file_input').files = files;
+                showPreview(files[0]);
+            }
+        }
+    }
+</script>

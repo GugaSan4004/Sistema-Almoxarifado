@@ -45,7 +45,6 @@ users_db = sqlite_core.init.users(sqlite)
 app = Flask(__name__)
 new_secret_key = secrets.token_urlsafe(32)
 app.secret_key = new_secret_key
-print(f"Secret key for this section -> {new_secret_key}")
 
 Socket = SocketIO(
     app,
@@ -460,7 +459,7 @@ def resume():
                 **values
             )
         elif request.method == "POST":
-            @roles_required(["admin"])
+            @roles_required(["Admin"])
             def update_mails():
                 data = request.form
 
@@ -1031,7 +1030,8 @@ def manage_roles():
             is_edit_mode = mode == "on"
 
             selected_tabs = request.form.getlist("tabs")
-            action = data.get("action", "save")
+            action = data.get("form_action", "save")
+
 
             if is_edit_mode:
                 role_id = data.get("role_id")
@@ -1040,13 +1040,11 @@ def manage_roles():
                 role_id = int(role_id)
 
                 if action == "delete":
-                    if role_id in [0, 1]:
-                        raise Exception(
-                            "Cargos padrões não podem ser deletados!")
+                    if role_id in [0]:
+                        raise Exception("Cargos padrões não podem ser deletados!")
 
                     if users_db.checkRoleUsage(role_id) > 0:
-                        raise Exception(
-                            "Existem usuários usando este cargo. Remova-os primeiro!")
+                        raise Exception("Existem usuários usando este cargo. Remova-os primeiro!")
 
                     if users_db.deleteRole(role_id):
                         message = "Cargo deletado com sucesso!"
