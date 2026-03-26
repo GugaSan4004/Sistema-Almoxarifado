@@ -421,8 +421,7 @@ class init:
             user_data["id"] = result[0]
             user_data["name"] = result[1]
             user_data["password"] = result[2]
-            user_data["theme"] = result[4]
-            user_data["status"] = result[5]
+            user_data["status"] = result[4]
 
             cur.execute(
                 "SELECT name FROM roles WHERE id = ?",
@@ -433,11 +432,9 @@ class init:
 
             user_data["role"] = cur.fetchone()[0]
 
-            allowed_tabs = self.getAllowedTabs(
+            user_data["allowed_tabs"] = self.getRoleAllowedTabs(
                 role_id=result[3]
             )
-
-            user_data["allowed_tabs"] = allowed_tabs
 
             cur.close()
 
@@ -467,7 +464,7 @@ class init:
 
             return result
 
-        def getAllowedTabs(self,
+        def getRoleAllowedTabs(self,
                            role_id: str
                            ) -> list | None:
             cur = self.connection.cursor()
@@ -546,9 +543,9 @@ class init:
 
             return True
 
-        def getRoles(self,
+        def getRoleData(self,
                 filter: str | int = None
-            ) -> list | None:
+            ) -> list:
             cur = self.connection.cursor()
             
             if filter:
@@ -559,14 +556,14 @@ class init:
                         filter
                     )
                 )
+                result = cur.fetchall()
+                cur.close()
+                return [{"id": row[0], "name": row[1], "created_by": row[2]} for row in result]
             else:
-                cur.execute("SELECT name FROM roles")
-
-            result = cur.fetchall()
-
-            cur.close()
-
-            return result
+                cur.execute("SELECT name FROM roles ORDER BY id ASC")
+                rows = cur.fetchall()
+                cur.close()
+                return [row[0] for row in rows]
 
         def updateUser(self,
             id: str,
@@ -613,26 +610,12 @@ class init:
             cur.close()
             return [{"id": row[0], "name": row[1]} for row in rows]
 
-        def getAllRoles(self) -> list:
-            cur = self.connection.cursor()
-            cur.execute("SELECT name FROM roles ORDER BY id ASC")
-            rows = cur.fetchall()
-            cur.close()
-            return [row[0] for row in rows]
-
         def getRolesWithIds(self) -> list:
             cur = self.connection.cursor()
             cur.execute("SELECT id, name FROM roles WHERE id != 1 ORDER BY id ASC")
             rows = cur.fetchall()
             cur.close()
             return rows
-
-        def getRoleByName(self, name: str):
-            cur = self.connection.cursor()
-            cur.execute("SELECT id FROM roles WHERE name = ?", (name.title(),))
-            row = cur.fetchone()
-            cur.close()
-            return row
 
         def createRole(self, name: str, created_by: int) -> int:
             cur = self.connection.cursor()

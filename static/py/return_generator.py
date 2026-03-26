@@ -6,10 +6,12 @@ import string
 import subprocess
 
 from docx import Document
+from docx.oxml.ns import qn 
 from datetime import datetime
 from docx.shared import Inches
 from docx.oxml import parse_xml
 from docx.oxml.ns import nsdecls
+
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.enum.table import WD_ROW_HEIGHT_RULE
 
@@ -89,12 +91,19 @@ class init:
                 paragraph.text = paragraph.text = ""
                 run = paragraph.add_run()
                 picture = run.add_picture(qr_buf, width=Inches(0.8), height=Inches(0.8))
-                make_image_floating(run, picture, 0.8, 0.8, -0.6, -0.6)
-            elif "Data: {{DATE}}" in paragraph.text:
-                paragraph.text = paragraph.text.replace("{{DATE}}", datetime.now().strftime("%d/%m/%Y"))
-            elif "Nome: {{NAME}}" in paragraph.text:
-                short_name = " ".join(username.split()[:3])
-                paragraph.text = paragraph.text.replace("{{NAME}}", short_name)
+                make_image_floating(run, picture, 0.8, 0.8, -0.45, -0.6)
+
+        short_name = " ".join(username.split()[:3])
+        for txbx in doc.element.iter(qn('w:txbxContent')):
+            for p in txbx.findall(qn('w:p')):
+                runs = p.findall(f'.//{qn("w:t")}')
+                full_text = "".join(r.text or "" for r in runs)
+                if "{{DATE}}" in full_text or "{{NAME}}" in full_text:
+                    full_text = full_text.replace("{{DATE}}", datetime.now().strftime("%d / %m / %Y"))
+                    full_text = full_text.replace("{{NAME}}", short_name)
+                    runs[0].text = full_text
+                    for r in runs[1:]:
+                        r.text = ""
 
         table = doc.tables[0]
 
@@ -134,24 +143,6 @@ class init:
         for row in rows:
             row.height = Inches(0.25)
             row.height_rule = WD_ROW_HEIGHT_RULE.EXACTLY
-
-        # section = doc.sections[0]
-        # footer = section.footer
-
-        # footer.paragraphs[0].clear()
-
-        # p = footer.paragraphs[0]
-        # run1 = p.add_run("DOCUMENTO EMITIDO EM:\n")
-        # run2 = p.add_run(f"{datetime.now().strftime('%d/%m/%Y')}\n\n")
-        # run3 = p.add_run("EMITIDO POR:\n")
-        # run4 = p.add_run(f"{username}")
-
-        # run1.bold = True
-        # run2.bold = True
-        # run3.bold = True
-        # run4.bold = True
-
-        # p.alignment = WD_ALIGN_PARAGRAPH.RIGHT
 
         docpath = self.path / "pictures" / "temp" / f"{tmp_name}.docx"
 

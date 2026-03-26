@@ -42,6 +42,16 @@ for process in psutil.process_iter(['pid', 'cmdline']):
 
 FOLDER = Path.cwd()
 
+if not os.path.exists(FOLDER / "pictures"):
+    os.makedirs(FOLDER / "pictures")
+
+if not os.path.exists(FOLDER / "pictures" / "temp"):
+    os.makedirs(FOLDER / "pictures" / "temp")
+
+if not os.path.exists(FOLDER / "pictures" / "mails"):
+    os.makedirs(FOLDER / "pictures" / "mails")
+
+
 imgReader = imageocr.init()
 sqlite = sqlite_core.init(FOLDER)
 returnGen = return_generator.init(FOLDER)
@@ -471,10 +481,10 @@ def resume():
         }
 
         if request.method == "GET":
-            return render_template(
-                template_name_or_list="tabs/resume.html",
-                **values
-            )
+            return jsonify({
+                "head": "load",
+                "Message": render_template("tabs/resume.html", **values)
+            }), 200
         elif request.method == "POST":
             @roles_required(["Admin"])
             def update_mails():
@@ -522,9 +532,12 @@ def resume():
 def register_mail():
     try:
         if request.method == "GET":
-            return render_template(
-                template_name_or_list="tabs/registerNewMail.html"
-            )
+            return jsonify({
+                "head": "load",
+                "Message": render_template(
+                    template_name_or_list="tabs/registerNewMail.html"
+                )
+            }), 200
         elif request.method == "POST":
             data = request.form
 
@@ -564,7 +577,10 @@ def register_pickup():
                 "users": users_db.getUsernames(inactives=False)
             }
 
-            return render_template(f"tabs/registerPickup.html", **values)
+            return jsonify({
+                "head": "load",
+                "Message": render_template(f"tabs/registerPickup.html", **values)
+            }), 200
         elif request.method == "POST":
             data = request.form
 
@@ -603,7 +619,10 @@ def manage_user():
                 ).get("name")
             }
 
-            return render_template(f"tabs/manageUsers.html", **values)
+            return jsonify({
+                "head": "load",
+                "Message": render_template(f"tabs/manageUsers.html", **values)
+            }), 200
         elif request.method == "POST":
             data = request.form
             username = data.get('username')
@@ -620,7 +639,6 @@ def manage_user():
                     raise Exception(
                         "Você não pode atualizar a sua propria conta!")
 
-                # IDOR Check: Ensure the user being edited is not an Admin unless requested by an Admin
                 target_user = users_db.getUserData(name=username)
                 if target_user.get("role") == "Admin" and users_db.getUserData(id=session.get("user_id")).get("role") != "Admin":
                     raise Exception(
@@ -631,9 +649,9 @@ def manage_user():
 
                 users_db.updateUser(
                     id=userdata.get('id'),
-                    role=users_db.getRoles(
+                    role=users_db.getRoleData(
                         filter=data.get('role')
-                    )[0][0],
+                    )[0].get("id"),
                     status=int(
                         data.get('status')
                     )
@@ -660,7 +678,7 @@ def manage_user():
                     ).get("name"),
                     "selected_user": username,
                     "users": users_db.getUsernames(),
-                    "roles": users_db.getRoles(),
+                    "roles": users_db.getRoleData(),
                     "userdata": {
                         "role": role,
                         "status": status
@@ -689,11 +707,46 @@ def manage_user():
 def register_exit():
     try:
         if request.method == "GET":
+            if args := request.args:
+                tmp_id = args.get("tmp_id", "")
+                code = args.get("code", "")
+                date = args.get("date", "")
+                people = args.get("people", "")
+
+
+                if not validate_code(code):
+                    raise Exception("Codigo de correspondencia invalido!")
+                
+                mail = mails_db.getMails(code, fetchOne=True)
+
+                if not mail:
+                    raise Exception("Correspondencia não encontrada!")
+
+                if mail[11] != "almox":
+                    raise Exception(
+                        "Correspondencia indisponivel para retirada!")
+
+                values = {
+                    "tmp_id": tmp_id,
+                    "fetched_code": code,
+                    "date": date,
+                    "potential_people": [people],
+                    "mail": mail
+                }
+
+                return jsonify({
+                    "head": "load",
+                    "Message": render_template("tabs/exitValues.html", **values)
+                }), 200
+
             values = {
                 "users": users_db.getUsernames()
             }
 
-            return render_template(f"tabs/registerExit.html", **values)
+            return jsonify({
+                "head": "load",
+                "Message": render_template(f"tabs/registerExit.html", **values)
+            }), 200
         elif request.method == "POST":
             if "image" in request.files:
                 file = request.files["image"]
@@ -825,6 +878,7 @@ def register_exit():
                 if not date or not people:
                     raise Exception("Valores insuficientes!")
 
+
                 if "final_submit" in data:
                     from werkzeug.utils import secure_filename
 
@@ -862,29 +916,6 @@ def register_exit():
                     return jsonify({
                         "head": "realert",
                         "Message": "Registro efetuado com sucesso!"
-                    }), 200
-                else:
-                    tmp_id = data.get("tmp_id", "")
-                    mail = mails_db.getMails(code, fetchOne=True)
-
-                    if not mail:
-                        raise Exception("Correspondencia não encontrada!")
-
-                    if mail[11] != "almox":
-                        raise Exception(
-                            "Correspondencia indisponivel para retirada!")
-
-                    values = {
-                        "tmp_id": tmp_id,
-                        "fetched_code": code,
-                        "date": date,
-                        "potential_people": [people],
-                        "mail": mail
-                    }
-
-                    return jsonify({
-                        "head": "load",
-                        "Message": render_template("tabs/exitValues.html", **values)
                     }), 200
         else:
             raise Exception("Method not allowed")
@@ -969,7 +1000,10 @@ def generate_return():
                         )
                     )
 
-            return render_template(f"tabs/generateReturn.html", **values)
+            return jsonify({
+                "head": "load",
+                "Message": render_template(f"tabs/generateReturn.html", **values)
+            }), 200
         elif request.method == "POST":
             data = json.loads(
                 s=request.form.get("values")
@@ -1014,10 +1048,10 @@ def generate_return():
                     'code': code
                 }
 
-                # mails_db.updateMail(
-                #     values=mailValues,
-                #     search=mailSearch
-                # )
+                mails_db.updateMail(
+                    values=mailValues,
+                    search=mailSearch
+                )
 
             return jsonify({
                 "head": "print",
@@ -1041,7 +1075,7 @@ def manage_roles():
 
             roles_data = []
             for r_id, r_name in roles:
-                allowed = users_db.getAllowedTabs(role_id=r_id)
+                allowed = users_db.getRoleAllowedTabs(role_id=r_id)
                 tabs = [t["id"] for t in allowed] if allowed else []
                 if r_id == 1:
                     tabs = [t["id"] for t in all_tabs]
@@ -1052,7 +1086,10 @@ def manage_roles():
                     "tabs": tabs
                 })
 
-            return render_template("tabs/manageRoles.html", all_tabs=all_tabs, roles_data=roles_data)
+            return jsonify({
+                "head": "load",
+                "Message": render_template("tabs/manageRoles.html", all_tabs=all_tabs, roles_data=roles_data)
+            }), 200
         elif request.method == "POST":
             data = request.form
             mode = data.get("mode")
@@ -1092,7 +1129,7 @@ def manage_roles():
                 if not role_name:
                     raise Exception("O nome do cargo não deve estar vazio!")
 
-                if users_db.getRoleByName(role_name):
+                if users_db.getRoleData(role_name):
                     raise Exception("Um cargo com este nome já existe!")
 
                 new_role_id = users_db.createRole(

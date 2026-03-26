@@ -14,9 +14,9 @@ class ChangeHandler(FileSystemEventHandler):
         self.restart_func = restart_func
 
     def on_modified(self, event):
-        print(event.src_path)
+        # print(event.src_path)
 
-        if (event.src_path.endswith(".py")) and "debug.py" not in event.src_path:
+        if (event.src_path.endswith(".py")) or ("tabs\\" in event.src_path) and "debug.py" not in event.src_path:
             print(
                 f"\n[SISTEMA] Alteração detectada em: {event.src_path}. Reiniciando servidor...")
             self.restart_func()

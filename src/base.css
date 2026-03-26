@@ -4,8 +4,8 @@
     --color-light-default-main: #02326f;
     --color-light-default-secondary: #6ab0f7;
 
-    --color-dark-default-main: #02326f;
-    --color-dark-default-secondary: #6ab0f7;
+    --color-dark-default-main: #0f172a;
+    --color-dark-default-secondary: #3b82f6;
 
     @keyframes slideOut {
         0% {
@@ -58,6 +58,37 @@
         }
     }
 }
+
+/* Dark mode: override light variables so all existing classes auto-adapt
+.dark {
+    --color-light-default-main: var(--color-dark-default-main);
+    --color-light-default-secondary: var(--color-dark-default-secondary);
+}
+
+.dark main {  
+    background-color: #1e293b;
+    color: #e2e8f0;
+}
+
+.dark .bg-white {
+    background-color: #1e293b !important;
+    color: #e2e8f0;
+}
+
+.dark h1,
+.dark h2,
+.dark h3,
+.dark h4,
+.dark h5,
+.dark h6,
+.dark label {
+    color: #e2e8f0;
+}
+
+.dark .border-light-default-main {
+    border-color: #e2e8f0 !important;
+} */
+
 
 @layer utilities {
     .scrollbar-hide::-webkit-scrollbar {

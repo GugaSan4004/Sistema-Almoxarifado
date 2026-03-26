@@ -27,7 +27,7 @@
     <div class="flex flex-col">
         <form action="/mails-api/get-mail-exit" method="post"
             class="grid-cols-[1cm_1fr_3.2cm_0.5fr_5.2cm_3.7cm_2.8cm] duration-300 transition-colors grid gap-2 py-2 pr-2 border-b border-gray-700/50 hover:bg-light-default-main/15 items-center text-xs text-center *:truncate">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" id="csrf-token" value="{{ csrf_token() }}">
 
             <span>{{id}}</span>
             <span class="text-start">{{name}}</span>
@@ -53,7 +53,7 @@
 
 <form action="/mails-api/registerExit"
     class="w-full flex flex-col space-y-4 items-center row-span-2 self-center justify-self-center" method="post">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" id="csrf-token" value="{{ csrf_token() }}">
 
     <div onclick="document.getElementById('file_input').click();" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)" id="drop-zone"
         class="relative max-w-md border-4 border-dashed border-slate-300 rounded-sm p-8 text-center cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-all min-h-75 flex items-center justify-center self-center">
@@ -76,4 +76,4 @@
     </button>
 </form>
 
-{% endif %}
+{% endif %}

@@ -1,5 +1,4 @@
-pictures/temp/*
-pictures/mails/*
+pictures/*
 api-key/
 __pycache__/*
 __pycache__*
@@ -14,4 +13,4 @@ __pycache__*
 *.idea/*
 package*.json
 node_modules
-.env
+.env

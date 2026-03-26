@@ -7,7 +7,7 @@
         </svg>
     </span>
     <form class="w-full" action="/mails-api/generateReturn" method="get">
-        <input name="csrf_token" type="hidden" value="{{ csrf_token() }}">
+        <input id="csrf-token" type="hidden" value="{{ csrf_token() }}">
         <input id="barcode-input"
             class="block w-full rounded-sm px-10 py-2 border border-gray-300 leading-5 bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-light-default-main focus:border-light-default-main sm:text-sm transition duration-300 ease-in-out"
             placeholder="Buscar por código AR..." 
@@ -20,7 +20,7 @@
 </div>
 
 <form class="-row-start-2 mr-4 mb-3 self-end justify-self-end" action="/mails-api/generateReturn" method="post">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" id="csrf-token" value="{{ csrf_token() }}">
     <input type="text" hidden id="values" name="values">
     <button onclick="prepareReturnDocument()"
         type="submit" {{ '' if mails else 'disabled' }}

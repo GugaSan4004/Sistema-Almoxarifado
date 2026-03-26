@@ -32,7 +32,7 @@
         </div>
     </div>
 
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" id="csrf-token" value="{{ csrf_token() }}">
     <script id="all-tabs-json" type="application/json">{{ all_tabs | tojson }}</script>
     <script id="roles-data-json" type="application/json">{{ roles_data | tojson }}</script>
 
@@ -46,4 +46,4 @@
             Enviar Alterações
         </button>
     </div>
-</form>
+</form>

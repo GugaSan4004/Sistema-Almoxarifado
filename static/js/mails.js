@@ -14,7 +14,6 @@ const getCsrfToken = () => {
     return document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 };
 
-
 const setInnerHTMLAndExecuteScripts = (element, html) => {
     element.innerHTML = html;
 }
@@ -113,6 +112,8 @@ const bindForms = () => {
                 const formData = new FormData(form);
 
                 if (method === "POST") {
+                    console.log(formData)
+                    
                     response = await fetch(url, {
                         method,
                         body: formData,
@@ -122,14 +123,18 @@ const bindForms = () => {
                     });
                 } else if (method === "GET") {
                     const params = new URLSearchParams(formData);
-                    url += `?${params.toString()}`;
+                    url += !params.toString().includes("csrf_token") ? `?${params.toString()}` : "";
+                    
                     response = await fetch(url, {
+                        headers: {
+                            'X-CSRFToken': getCsrfToken()
+                        },
                         method
                     });
                 }
                 
                 const result = await response.json();
-                
+
                 const message = result.Message;
                 
                 loading(false)
@@ -138,8 +143,9 @@ const bindForms = () => {
                     triggerToast(message, false);
                     return;
                 }
-
+                
                 const head = result.head;
+                
 
                 form.querySelectorAll('input:not([type="hidden"]), textarea').forEach(input => input.value = '');
 
@@ -187,8 +193,8 @@ const bindForms = () => {
                 }
             } catch (e) {
                 loading(false)
-                triggerToast("Um erro fatal aconteceu! Por favor atualize a pagina!", false);
-                console.error(e)
+                triggerToast("Um erro inesperado aconteceu! Por favor atualize a pagina!", false);
+                console.log(e)
             }
         });
     });
@@ -217,14 +223,14 @@ async function loadBody() {
     loading(false)
 
     if (response.ok) {
-        const result = await response.text()
+        const result = await response.json()
 
         if (response.redirected) {
             window.location.reload();
             return
         }
 
-        setInnerHTMLAndExecuteScripts(main, result);
+        setInnerHTMLAndExecuteScripts(main, result.Message);
         loadTabScript(actualTabId); // Load the tab-specific JS
         bindForms(main)
     } else {

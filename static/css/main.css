@@ -76,6 +76,8 @@
     --default-mono-font-family: var(--font-mono);
     --color-light-default-main: #02326f;
     --color-light-default-secondary: #6ab0f7;
+    --color-dark-default-main: #0f172a;
+    --color-dark-default-secondary: #3b82f6;
   }
 }
 @layer base {
@@ -507,6 +509,9 @@
   }
   .w-5 {
     width: calc(var(--spacing) * 5);
+  }
+  .w-6 {
+    width: calc(var(--spacing) * 6);
   }
   .w-7 {
     width: calc(var(--spacing) * 7);
