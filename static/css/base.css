@@ -59,6 +59,10 @@
     }
 }
 
+* {
+    animation: all 0.3s ease-in-out;
+}
+
 /* Dark mode: override light variables so all existing classes auto-adapt
 .dark {
     --color-light-default-main: var(--color-dark-default-main);

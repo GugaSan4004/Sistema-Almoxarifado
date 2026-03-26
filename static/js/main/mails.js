@@ -328,7 +328,7 @@ window.onload = () => {
         sidebar_opt.appendChild(span)
     })
 
-    if (ALLOWED_TABS) {
-        loadBody()
-    }
+    // if (ALLOWED_TABS) {
+    //     loadBody()
+    // }
 };

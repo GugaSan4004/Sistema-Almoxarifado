@@ -1,13 +1,13 @@
-import subprocess
-import time
-from pathlib import Path
 import os
+import time
+import subprocess
+
+from pathlib import Path
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
 SERVER_SCRIPT = Path.cwd() / "server.py"
-TAILWIND_CMD = "npx @tailwindcss/cli -i ./src/base.css -o ./static/css/main.css --watch"
-
+TAILWIND_CMD = "npx @tailwindcss/cli -i ./static/css/base.css -o ./static/css/main.css --watch"
 
 class ChangeHandler(FileSystemEventHandler):
     def __init__(self, restart_func):
@@ -16,7 +16,7 @@ class ChangeHandler(FileSystemEventHandler):
     def on_modified(self, event):
         # print(event.src_path)
 
-        if (event.src_path.endswith(".py")) or ("tabs\\" in event.src_path) and "debug.py" not in event.src_path:
+        if (event.src_path.endswith(".py")) or ("templates\\" in event.src_path) and "debug.py" not in event.src_path:
             print(
                 f"\n[SISTEMA] Alteração detectada em: {event.src_path}. Reiniciando servidor...")
             self.restart_func()

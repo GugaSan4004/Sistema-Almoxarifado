@@ -3,7 +3,7 @@ from pathlib import Path
 from functools import wraps
 from datetime import datetime
 from flask_socketio import SocketIO
-from static.py import imageocr, return_generator, sqlite_core
+from modules import imageocr, return_generator, sqlite_core
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask import Flask, abort, request, jsonify, render_template, send_from_directory, session, redirect, url_for, flash, make_response
 
@@ -251,6 +251,9 @@ def get_priority_class(priority: str):
 def page_not_found(e):
     return redirect(url_for('mails'))
 
+@app.errorhandler(429)
+def ratelimit_handler(e):
+    return "Ratelimit exceeded, try again later.", 429
 
 # ################################ #
 #            Main Routes           #
@@ -392,7 +395,7 @@ def register():
 
             if users_db.getUserData(name=check_name):
                 flash(
-                    message="Já existe um usuario cadastrado com esse nome!",
+                    message="Já existe alguem cadastrado com esse nome!",
                     category="danger"
                 )
                 return redirect(
@@ -814,16 +817,12 @@ def register_exit():
                             mails_db.updateMail(mailValues, mailSearch)
 
                             shutil.copyfile(
-                                src=FOLDER / 'pictures' /
-                                'temp' / f'{tmp_name}.jpg',
-                                dst=FOLDER / 'pictures' /
-                                'mails' / f'{new_id}.jpg'
+                                src=FOLDER / 'pictures' / 'temp' / f'{tmp_name}.jpg',
+                                dst=FOLDER / 'pictures' / 'mails' / f'{new_id}.jpg'
                             )
 
-                        (FOLDER / 'pictures' / 'temp' /
-                         f'{tmp_name}.jpg').unlink(missing_ok=True)
-                        (FOLDER / 'pictures' / 'temp' /
-                         f'{extracted_token}.jpg').unlink(missing_ok=True)
+                        (FOLDER / 'pictures' / 'temp' / f'{tmp_name}.jpg').unlink(missing_ok=True)
+                        (FOLDER / 'pictures' / 'temp' / f'{extracted_token}.jpg').unlink(missing_ok=True)
 
                         return jsonify({
                             "head": "realert",

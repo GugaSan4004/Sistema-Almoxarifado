@@ -2,16 +2,18 @@
 <html lang="pt-BR">
 
 <head>
+    <title>Correspondencias</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Correspondencias</title>
 
-
-    <script src="/static/js/mails.js"></script>
     <!-- <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script> -->
     <link href="/static/css/main.css" rel="stylesheet">
 
-    <link rel="icon" href="/static/imgs/logo/mail.svg" sizes="any" type="image/svg+xml">
+    <script src="/static/js/main/mails.js"></script>
+
+    <link rel="manifest" href="/templates/mails/manifest.json">
+
+    <link rel="icon" href="/static/logo/mail.svg" sizes="705x705" type="image/svg+xml">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
 </head>
@@ -21,17 +23,18 @@
 </script>
 
 <body class="bg-light-default-main grid grid-rows-[auto_1fr] h-screen relative">
-    <header class="grid grid-flow-col grid-cols-[1fr_auto_1fr] py-2 px-4 text-white select-none">
+    <header class="grid grid-flow-col grid-cols-[1fr_auto_1fr] gap-x-4 py-2 px-4 text-white select-none">
         <div class="flex items-center justify-start">
-            <svg onclick="toggleSidebar(true)" class="w-7 cursor-pointer hover:scale-110 duration-200" viewBox="0 25 70 50">
+            <svg onclick="toggleSidebar(true)" class="w-6 md:w-7 cursor-pointer hover:scale-110 duration-200"
+                viewBox="0 25 70 50">
                 <path class="stroke-8 stroke-white" d="M 0,30 H 70" />
                 <path class="stroke-8 stroke-white" d="M 0,50 H 70" />
                 <path class="stroke-8 stroke-white" d="M 0,70 H 70" />
             </svg>
         </div>
 
-        <h1 class="text-3xl">
-            Sistema de Correspondencia
+        <h1 class="md:text-3xl text-lg">
+            Sistema de Correspondência
         </h1>
 
         <div class="flex items-center gap-2 justify-end">
@@ -47,32 +50,39 @@
                     </svg>
                 </button>
             </div> -->
-            <span class="bg-gray-600 pb-1 w-10 h-10 rounded-full flex justify-center items-center">
-                {{ user_name[0] | upper if user_name else '?' }}
-            </span>
-            <h1 class="h-7">
-                {% set name = user_name.split() %}
-                {% if name|length > 2 and name[1].lower() in ['da', 'do', 'das', 'dos', 'de'] %}
-                {{ name[:3] | join(' ') }}
-                {% else %}
-                {{ name[:2] | join(' ') if name else 'Visitante' }}
-                {% endif %}
-            </h1>
-            <a href="/logout">
-                <svg class="cursor-pointer hover:scale-110" height="20" viewBox="0 0 24.00 24.00" fill="none">
-                    <path d="M21 12L13 12" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round"
-                        stroke-linejoin="round"></path>
-                    <path d="M18 15L20.913 12.087V12.087C20.961 12.039 20.961 11.961 20.913 11.913V11.913L18 9"
-                        stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path>
-                    <path
-                        d="M16 5V4.5V4.5C16 3.67157 15.3284 3 14.5 3H5C3.89543 3 3 3.89543 3 5V19C3 20.1046 3.89543 21 5 21H14.5C15.3284 21 16 20.3284 16 19.5V19.5V19"
-                        stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path>
-                </svg>
+            <a href="/logout" class="group relative bg-gray-600 w-10 h-10 rounded-full flex justify-center items-center overflow-hidden transition-all duration-300">
+                <span class="transition-transform duration-300 pb-1 group-hover:translate-x-12">
+                    {{ user_name[0] | upper if user_name else '?' }}
+                </span>
+                <div class="absolute pl-1 left-full group-hover:left-1/2 group-hover:-translate-x-1/2 transition-all duration-300 flex justify-center items-center">
+                    <svg class="cursor-pointer" height="20" viewBox="0 0 24.00 24.00" fill="none">
+                        <path d="M21 12L13 12" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round"
+                            stroke-linejoin="round"></path>
+                        <path d="M18 15L20.913 12.087V12.087C20.961 12.039 20.961 11.961 20.913 11.913V11.913L18 9"
+                            stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path>
+                        <path
+                            d="M16 5V4.5V4.5C16 3.67157 15.3284 3 14.5 3H5C3.89543 3 3 3.89543 3 5V19C3 20.1046 3.89543 21 5 21H14.5C15.3284 21 16 20.3284 16 19.5V19.5V19"
+                            stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path>
+                    </svg>
+                </div>
             </a>
+
+            <h1 class="h-7 items-center overflow-hidden whitespace-nowrap">
+                {% set name = user_name.split() %}
+                <span class="md:hidden">{{ name[0] if name else 'Visitante' }}</span>
+                <span class="hidden md:inline">
+                    {% if name|length > 2 and name[1].lower() in ['da', 'do', 'das', 'dos', 'de'] %}
+                    {{ name[:3] | join(' ') }}
+                    {% else %}
+                    {{ name[:2] | join(' ') if name else 'Visitante' }}
+                    {% endif %}
+                </span>
+            </h1>
         </div>
     </header>
 
-    <aside id="toast" class="bg-white pl-2 pb-1 duration-400 select-none fixed flex flex-col justify-center rounded-md top-16 -right-1 z-40 h-24 w-80 border-l-5 text-black shadow-2xl transform transition-transform ease-in-out translate-x-full">
+    <aside id="toast"
+        class="bg-white pl-2 pb-1 duration-400 select-none fixed flex flex-col justify-center rounded-md top-16 -right-1 z-40 h-24 w-80 border-l-5 text-black shadow-2xl transform transition-transform ease-in-out translate-x-full">
         <h2 class="font-bold">{{ Status }}</h2>
         <h1 class="text-sm text-gray-600">{{ Message }}</h1>
         <div id="toast-progress" class="absolute bottom-0 left-0 h-1 bg-current w-full"></div>
@@ -130,7 +140,8 @@
         class="select-none fixed inset-0 z-40 flex flex-col items-center justify-center bg-black/50 backdrop-blur-xs pointer-events-auto">
         <div hidden class="fixed inset-0 z-50 flex flex-col justify-center" id="loading">
             <div class="relative flex items-center justify-center">
-                <div class="w-16 h-16 border-4 border-slate-200 border-t-light-default-main rounded-full animate-spin"></div>
+                <div class="w-16 h-16 border-4 border-slate-200 border-t-light-default-main rounded-full animate-spin">
+                </div>
                 <div
                     class="absolute w-8 h-8 border-4 border-slate-200 border-b-light-default-main rounded-full animate-reverse-spin">
                 </div>
@@ -169,13 +180,13 @@
             // applyTheme(localStorage.getItem('theme') === 'dark');
 
             // Sidebar
-            window.toggleSidebar = function(showOverlay) {
+            window.toggleSidebar = function (showOverlay) {
                 document.getElementById('overlay').hidden = !showOverlay;
                 document.getElementById('sidebar').classList.toggle('-translate-x-full');
             }
 
-            window.handleOverlayClick = function(event) {
-                if(event.target.id == 'overlay') {
+            window.handleOverlayClick = function (event) {
+                if (event.target.id == 'overlay') {
                     event.target.hidden = true;
                     document.getElementById('sidebar').classList.toggle('-translate-x-full');
                 }

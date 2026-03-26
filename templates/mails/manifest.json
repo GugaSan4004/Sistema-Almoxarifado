@@ -1,14 +1,16 @@
 {
   "name": "Mails",
   "short_name": "Mails",
-  "start_url": "/mails/",
-  "scope": "/mails/",
+  "start_url": "/",
   "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "description": "Sistema de controle de correspondências!",
   "icons": [
     {
-      "src": "/static/imgs/logo/Nerd-Mails.png",
-      "sizes": "192x192",
-      "type": "image/png"
+      "src": "/static/logo/mail.svg",
+      "sizes": "705x705",
+      "type": "image/svg+xml"
     }
   ]
 }
