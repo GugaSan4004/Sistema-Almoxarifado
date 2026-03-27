@@ -126,7 +126,7 @@ def login_required(f):
             if user.get("status") < 0:
                 return redirect(
                     location=url_for(
-                        endpoint='login'
+                        endpoint='logout'
                     )
                 )
         else:
@@ -262,7 +262,7 @@ def ratelimit_handler(e):
 
 
 @app.route("/login", methods=["GET", "POST"])
-@limiter.limit("10 per minute")
+@limiter.limit("50 per minute")
 def login():
     if request.method == "GET":
         try:
@@ -473,11 +473,11 @@ def resume():
     try:
         values = {
             "totals": mails_db.getTotals(),
-            "mails": mails_db.getMails(request.args.get("filter", ""), request.args.get("order", "id"), request.args.get("direction", "DESC")),
+            "mails": mails_db.getMails(request.args.get("resume_filter", ""), request.args.get("order", "id"), request.args.get("direction", "DESC")),
             "is_delayed_function": is_delayed,
             "format_date_function": format_date,
             "get_priority_class_function": get_priority_class,
-            "filter": request.args.get("filter", ""),
+            "resume_filter": request.args.get("resume_filter", ""),
             "actualOrder": request.args.get("order", "id"),
             "is_admin": users_db.getUserData(
                 id=session.get('user_id')
@@ -712,36 +712,37 @@ def register_exit():
     try:
         if request.method == "GET":
             if args := request.args:
-                tmp_id = args.get("tmp_id", "")
-                code = args.get("code", "")
-                date = args.get("date", "")
-                people = args.get("people", "")
+                if args.get("code"):
+                    tmp_id = args.get("tmp_id", "")
+                    code = args.get("code", "")
+                    date = args.get("date", "")
+                    people = args.get("people", "")
 
 
-                if not validate_code(code):
-                    raise Exception("Codigo de correspondencia invalido!")
-                
-                mail = mails_db.getMails(code, fetchOne=True)
+                    if not validate_code(code):
+                        raise Exception("Codigo de correspondencia invalido!")
+                    
+                    mail = mails_db.getMails(code, fetchOne=True)
 
-                if not mail:
-                    raise Exception("Correspondencia não encontrada!")
+                    if not mail:
+                        raise Exception("Correspondencia não encontrada!")
 
-                if mail[11] != "almox":
-                    raise Exception(
-                        "Correspondencia indisponivel para retirada!")
+                    if mail[11] != "almox":
+                        raise Exception(
+                            "Correspondencia indisponivel para retirada!")
 
-                values = {
-                    "tmp_id": tmp_id,
-                    "fetched_code": code,
-                    "date": date,
-                    "potential_people": [people],
-                    "mail": mail
-                }
+                    values = {
+                        "tmp_id": tmp_id,
+                        "fetched_code": code,
+                        "date": date,
+                        "potential_people": [people],
+                        "mail": mail
+                    }
 
-                return jsonify({
-                    "head": "load",
-                    "Message": render_template("tabs/exitValues.html", **values)
-                }), 200
+                    return jsonify({
+                        "head": "load",
+                        "Message": render_template("tabs/exitValues.html", **values)
+                    }), 200
 
             values = {
                 "users": users_db.getUsernames()

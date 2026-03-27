@@ -1,7 +1,6 @@
 // const ALLOWED_TABS FORMS_ID
 
-// let actualTabId = "resume";
-let actualTabId = "registerNewMail";
+let actualTabId = "resume";
 
 let URLParams = {};
 
@@ -58,7 +57,7 @@ const triggerToast = (message, success) => {
     const duration = 6000;
     
     sound.currentTime = 0;
-    sound.src = `/static/sounds/${success ? "success" : "error"}.mp3`;
+    sound.src = `/static/sound/${success ? "success" : "error"}.mp3`;
     
     document.querySelector("#toast > h2").textContent = success ? "Sucesso" : "Error";
     document.querySelector("#toast > h1").textContent = message;
@@ -84,7 +83,7 @@ const triggerToast = (message, success) => {
     progressBar.style.width = '0%';
 
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => {        
+    toastTimer = setTimeout(() => {
         toast.classList.add('translate-x-full');
         
         setTimeout(() => {
@@ -114,7 +113,6 @@ const bindForms = () => {
                 const formData = new FormData(form);
 
                 if (method === "POST") {
-                    console.log(formData)
                     
                     response = await fetch(url, {
                         method,
@@ -243,7 +241,7 @@ async function loadBody() {
 }
 
 const setFilter = (e) => {
-    URLParams.filter = e
+    URLParams.resume_filter = e
     loadBody()
 };
 

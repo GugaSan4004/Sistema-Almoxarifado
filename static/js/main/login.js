@@ -6,7 +6,9 @@ const getCookie = (name) => {
 }
 
 window.onload = function () {
+    console.log("teste2")
     if (getCookie('change_pass') === 'true') {
+        console.log("teste1")
         const main = document.querySelector("main")
         main.className = "grid bg-white grid-flow-col h-140 w-270 rounded-md z-1"
         main.removeChild(document.getElementById("message-body"))
