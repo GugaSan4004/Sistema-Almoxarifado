@@ -6,8 +6,7 @@
             value="{{ filter }}" onkeydown="handleFilterKeydown(event)">
         <button type="submit" hidden></button>
     </form>
-    <span onclick="setFilter('')" class="
-                    cursor-pointer absolute inset-y-0 right-2 flex items-center pl-3
+    <span onclick="setFilter('')" class="cursor-pointer absolute inset-y-0 right-2 flex items-center pl-3
                 ">
         <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
@@ -17,8 +16,8 @@
 </div>
 
 <div class="-row-start-2 flex mr-4 mb-4 items-center gap-1 justify-end self-end h-18">
-    <div id="stats-extra"                                                                       
-        class="flex gap-1 overflow-hidden *:rounded-sm *:text-ellipsis *:whitespace-nowrap *:overflow-hidden *:truncate h-full *:flex *:justify-center *:flex-col opacity-100 translate-x-0 duration-500! max-w-4xl">
+    <div id="stats-extra"
+        class="flex gap-1 overflow-hidden *:rounded-sm *:text-ellipsis *:whitespace-nowrap *:overflow-hidden *:truncate h-full *:flex *:justify-center *:flex-col opacity-100 translate-x-0 max-w-4xl duration-500!">
         <div onclick="setFilter('delayed')"
             class="cursor-pointer bg-red-600/8 hover:bg-red-600/20 border-red-600 text-red-600 border-l-4 p-2 px-4 shadow-sm w-45">
             <p class="uppercase font-bold">Atrasadas</p>

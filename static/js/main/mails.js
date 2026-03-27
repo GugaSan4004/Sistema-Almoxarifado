@@ -1,5 +1,7 @@
 // const ALLOWED_TABS FORMS_ID
-let actualTabId = "resume";
+
+// let actualTabId = "resume";
+let actualTabId = "registerNewMail";
 
 let URLParams = {};
 

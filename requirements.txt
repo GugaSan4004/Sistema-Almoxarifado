@@ -10,7 +10,7 @@ Pillow==12.1.1
 psutil==7.2.2
 pyautogui==0.9.54
 python_docx==1.2.0
-rapidfuzz==3.14.3
+rapidfuzz==3.14.a3
 Werkzeug==3.1.6
 flask-wtf
 flask-limiter

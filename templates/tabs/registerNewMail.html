@@ -1,7 +1,7 @@
 <form action="/mails-api/registerNewMail" method="post"
-    class="p-8 bg-white rounded-xl shadow-lg overflow-hidden border-t-4 border-light-default-main row-span-2 w-[70vmax] self-center h-[40vmax] gap-x-3 justify-self-center grid grid-cols-2 *:w-full *:mb-8">
+    class="md:p-8 py-8 px-6 bg-white rounded-xl shadow-lg overflow-hidden border-t-4 border-light-default-main row-span-2 w-5/6 self-center gap-x-3 justify-self-center grid *:w-full md:gap-8 gap-4">
     <input type="hidden" id="csrf-token" value="{{ csrf_token() }}">
-    <h2 class="col-span-2 text-3xl! mt-8 font-bold text-center text-light-default-main">Cadastro de Correspondencia</h2>
+    <h2 class="md:col-span-2 py-3 md:text-3xl! text-xl! font-bold text-center text-light-default-main">Cadastro de Correspondencia</h2>
 
     <div>
         <label class="block font-semibold text-gray-600 mb-1">Destinatario Completo</label>
@@ -31,12 +31,12 @@
             <option value="Judicial">Judicial</option>
         </select>
     </div>
-    <div class="col-span-2">
+    <div class="md:col-span-2">
         <label class="block font-semibold text-gray-600 mb-1">Codigo AR</label>
         <input name="code" type="text" minlength="4" required placeholder="Ex: AB123456789BR" autocomplete="off"
             class="rounded-sm w-full px-4 py-2 border border-gray-300 focus:ring-2 focus:ring-light-default-main focus:border-transparent outline-none transition-all">
     </div>
     <button type="submit"
-        class="col-span-2 cursor-pointer h-11 hover:text-light-default-secondary w-full bg-light-default-main text-white font-bold py-3 shadow-md transform active:scale-95 transition-all tracking-wide mt-4 rounded-sm">Salvar
+        class="md:col-span-2 cursor-pointer h-11 hover:text-light-default-secondary w-full bg-light-default-main text-white font-bold py-3 shadow-md transform active:scale-95 transition-all tracking-wide mt-4 rounded-sm">Salvar
         Registro</button>
 </form>
