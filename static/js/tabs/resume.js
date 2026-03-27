@@ -6,7 +6,7 @@
     }
 
     window.toggleStats = function() {
-        if (typeof resume_helpersOpen === 'undefined') window.resume_helpersOpen = true;
+        if (typeof resume_helpersOpen === 'undefined') window.resume_helpersOpen = false;
         resume_helpersOpen = !resume_helpersOpen;
         const statsExtra = document.getElementById('stats-extra');
         if (!statsExtra) return;

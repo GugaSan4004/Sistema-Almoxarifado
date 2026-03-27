@@ -231,7 +231,7 @@ async function loadBody() {
         }
 
         setInnerHTMLAndExecuteScripts(main, result.Message);
-        loadTabScript(actualTabId); // Load the tab-specific JS
+        loadTabScript(actualTabId);
         bindForms(main)
     } else {
 
@@ -328,7 +328,7 @@ window.onload = () => {
         sidebar_opt.appendChild(span)
     })
 
-    // if (ALLOWED_TABS) {
-    //     loadBody()
-    // }
+    if (ALLOWED_TABS) {
+        loadBody()
+    }
 };

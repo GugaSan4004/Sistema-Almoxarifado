@@ -25,7 +25,7 @@
 <body class="bg-light-default-main grid grid-rows-[auto_1fr] h-screen relative">
     <header class="grid grid-flow-col grid-cols-[1fr_auto_1fr] gap-x-4 py-2 px-4 text-white select-none">
         <div class="flex items-center justify-start">
-            <svg onclick="toggleSidebar(true)" class="w-6 md:w-7 cursor-pointer hover:scale-110 duration-200"
+            <svg onclick="toggleSidebar(true)" class="w-6 md:w-7 cursor-pointer hover:scale-110"
                 viewBox="0 25 70 50">
                 <path class="stroke-8 stroke-white" d="M 0,30 H 70" />
                 <path class="stroke-8 stroke-white" d="M 0,50 H 70" />
@@ -33,7 +33,7 @@
             </svg>
         </div>
 
-        <h1 class="md:text-3xl text-lg">
+        <h1 class="text-[4vmin] md:text-3xl self-center">
             Sistema de Correspondência
         </h1>
 
@@ -50,11 +50,11 @@
                     </svg>
                 </button>
             </div> -->
-            <a href="/logout" class="group relative bg-gray-600 w-10 h-10 rounded-full flex justify-center items-center overflow-hidden transition-all duration-300">
-                <span class="transition-transform duration-300 pb-1 group-hover:translate-x-12">
+            <a href="/logout" class="group relative bg-gray-600 w-10 h-10 rounded-full flex justify-center items-center overflow-hidden">
+                <span class="md:pb-1 group-hover:translate-x-12">
                     {{ user_name[0] | upper if user_name else '?' }}
                 </span>
-                <div class="absolute pl-1 left-full group-hover:left-1/2 group-hover:-translate-x-1/2 transition-all duration-300 flex justify-center items-center">
+                <div class="absolute pl-1 left-full group-hover:left-1/2 group-hover:-translate-x-1/2 flex justify-center items-center">
                     <svg class="cursor-pointer" height="20" viewBox="0 0 24.00 24.00" fill="none">
                         <path d="M21 12L13 12" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round"
                             stroke-linejoin="round"></path>
@@ -67,7 +67,7 @@
                 </div>
             </a>
 
-            <h1 class="h-7 items-center overflow-hidden whitespace-nowrap">
+            <h1 class="h-7 pt-[2.6px] md:pt-0 items-center overflow-hidden whitespace-nowrap">
                 {% set name = user_name.split() %}
                 <span class="md:hidden">{{ name[0] if name else 'Visitante' }}</span>
                 <span class="hidden md:inline">
@@ -82,7 +82,7 @@
     </header>
 
     <aside id="toast"
-        class="bg-white pl-2 pb-1 duration-400 select-none fixed flex flex-col justify-center rounded-md top-16 -right-1 z-40 h-24 w-80 border-l-5 text-black shadow-2xl transform transition-transform ease-in-out translate-x-full">
+        class="bg-white pl-2 pb-1 duration-400 select-none fixed flex flex-col justify-center rounded-md top-16 -right-1 z-40 h-24 w-80 border-l-5 text-black shadow-2xl transform translate-x-full">
         <h2 class="font-bold">{{ Status }}</h2>
         <h1 class="text-sm text-gray-600">{{ Message }}</h1>
         <div id="toast-progress" class="absolute bottom-0 left-0 h-1 bg-current w-full"></div>
@@ -90,7 +90,7 @@
     </aside>
 
     <aside id="sidebar"
-        class="overflow-y-auto duration-400 select-none fixed block top-0 left-0 z-50 h-screen w-64 bg-light-default-main text-white shadow-2xl transform transition-transform ease-in-out border-r-4 -translate-x-full">
+        class="overflow-y-auto duration-400 select-none fixed block top-0 left-0 z-50 h-screen w-64 bg-light-default-main text-white shadow-2xl transform border-r-4 -translate-x-full">
 
         <svg class="absolute select-none top-3 right-20" viewBox="0 0 531.549 316.44" height="60px">
             <g stroke="#1a1412" stroke-width="18" stroke-linejoin="round"
@@ -124,14 +124,14 @@
             </g>
         </svg>
 
-        <div onclick="toggleSidebar(false)" class="hover:scale-110 absolute top-0 right-0 cursor-pointer duration-200">
+        <div onclick="toggleSidebar(false)" class="hover:scale-110 absolute top-0 right-0 cursor-pointer">
             <svg class="w-7 h-7 cursor-pointer" viewBox="0 25 70 50">
                 <path class="stroke-8 stroke-white" d="M 15,30 L 55,70" />
                 <path class="stroke-8 stroke-white" d="M 15,70 L 55,30" />
             </svg>
         </div>
 
-        <div class="*:border-y-gray-400 *:select-none *:border-y *:cursor-pointer *:py-3.5 *:pl-2.5 *:transition-all *:duration-100 *:hover:border-l-6
+        <div class="*:border-y-gray-400/50 *:select-none *:border-y *:cursor-pointer *:py-3.5 *:pl-2.5 *:hover:border-l-6
         flex flex-col gap-6 pt-24" id="aside-options">
         </div>
     </aside>
@@ -154,12 +154,12 @@
         </div>
     </div>
 
-    <main class="**:**:text-sm grid grid-rows-2 overflow-hidden bg-white row-start-2">
+    <main class="**:**:text-sm grid grid-rows-2 overflow-y-hidden bg-white row-start-2">
 
     </main>
 
     <img id="img-preview"
-        class="select-none absolute top-0 left-0 pointer-events-none z-50 transition-opacity duration-300 ease-in-out opacity-0 max-h-70 bg-white"
+        class="select-none absolute top-0 left-0 pointer-events-none z-50 opacity-0 max-h-70 bg-white"
         src="" alt="Imagem não Encontrada!">
 
     <script>
