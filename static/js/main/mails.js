@@ -65,10 +65,10 @@ const triggerToast = (message, success) => {
 
     sound.play();
 
-    toast.classList.remove('border-green-600', 'border-red-600', 'text-green-600', 'text-red-600');
+    toast.classList.remove('border-green-600', 'border-red-600', 'text-green-600', 'text-red-600', `shadow-red-600/20`, `shadow-green-600/20`);
     progressBar.classList.remove('bg-green-600', 'bg-red-600');
 
-    toast.classList.add(`border-${status_color}-600`, `text-${status_color}-600`);
+    toast.classList.add(`border-${status_color}-600`, `text-${status_color}-600`, `shadow-${status_color}-600/20`);
     progressBar.classList.add(`bg-${status_color}-600`);
     
 
@@ -300,7 +300,31 @@ const showPreview = (file) => {
     document.getElementById("submit-btn").disabled = false
 };
 
+const applyTheme = (dark) => {
+    const sun = document.getElementById('theme-icon-sun');
+    const moon = document.getElementById('theme-icon-moon');
+    
+    if (dark) {
+        document.documentElement.classList.add('dark');
+        sun.classList.add('rotate-90', 'scale-0');
+        moon.classList.remove('-rotate-90', 'scale-0');
+    } else {
+        document.documentElement.classList.remove('dark');
+        sun.classList.remove('rotate-90', 'scale-0');
+        moon.classList.add('-rotate-90', 'scale-0');
+    }
+};
+
 window.onload = () => {
+    const savedTheme = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+    if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+        applyTheme(true);
+    } else {
+        applyTheme(false);
+    }
+
     sidebar = document.getElementById("sidebar")
     main = document.querySelector("main")
 

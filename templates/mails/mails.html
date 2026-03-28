@@ -18,6 +18,8 @@
 
 </head>
 
+{% set name = user_name.split() %}
+
 <script>
     const ALLOWED_TABS = {{ allowed_tabs | tojson }};
 </script>
@@ -25,50 +27,26 @@
 <body class="bg-light-default-main grid grid-rows-[auto_1fr] h-screen relative">
     <header class="grid grid-flow-col grid-cols-[1fr_auto_1fr] gap-x-4 py-2 px-4 text-white select-none">
         <div class="flex items-center justify-start">
-            <svg onclick="toggleSidebar(true)" class="w-6 md:w-7 cursor-pointer hover:scale-110"
-                viewBox="0 25 70 50">
+            <svg onclick="toggleSidebar(true)" class="w-6 md:w-7 cursor-pointer hover:scale-110" viewBox="0 25 70 50">
                 <path class="stroke-8 stroke-white" d="M 0,30 H 70" />
                 <path class="stroke-8 stroke-white" d="M 0,50 H 70" />
                 <path class="stroke-8 stroke-white" d="M 0,70 H 70" />
             </svg>
         </div>
 
-        <h1 class="text-[4vmin] md:text-3xl self-center">
+        <h1 class="text-[3.5vmin] md:text-3xl self-center">
             Sistema de Correspondência
         </h1>
 
         <div class="flex items-center gap-2 justify-end">
-            <!-- <div>
-                <button id="theme-toggle" onclick="toggleTheme()" class="cursor-pointer p-1 rounded-full hover:scale-110 transition-transform duration-200">
-                    <svg id="theme-icon-sun" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-                    </svg>
-                    <svg id="theme-icon-moon" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-                    </svg>
-                </button>
-            </div> -->
-            <a href="/logout" class="group relative bg-gray-600 w-10 h-10 rounded-full flex justify-center items-center overflow-hidden">
-                <span class="md:pb-1 group-hover:translate-x-12">
+            <span
+                class="relative bg-gray-600 w-10 h-10 rounded-full md:pb-1 flex justify-center items-center overflow-hidden">
                     {{ user_name[0] | upper if user_name else '?' }}
-                </span>
-                <div class="absolute pl-1 left-full group-hover:left-1/2 group-hover:-translate-x-1/2 flex justify-center items-center">
-                    <svg class="cursor-pointer" height="20" viewBox="0 0 24.00 24.00" fill="none">
-                        <path d="M21 12L13 12" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round"
-                            stroke-linejoin="round"></path>
-                        <path d="M18 15L20.913 12.087V12.087C20.961 12.039 20.961 11.961 20.913 11.913V11.913L18 9"
-                            stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path>
-                        <path
-                            d="M16 5V4.5V4.5C16 3.67157 15.3284 3 14.5 3H5C3.89543 3 3 3.89543 3 5V19C3 20.1046 3.89543 21 5 21H14.5C15.3284 21 16 20.3284 16 19.5V19.5V19"
-                            stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path>
-                    </svg>
-                </div>
-            </a>
+            </span>
 
-            <h1 class="h-7 pt-[2.6px] md:pt-0 items-center overflow-hidden whitespace-nowrap">
-                {% set name = user_name.split() %}
+            <h1 
+                onclick="toggleUserMenu()"
+                class="hover:scale-110 h-7 pt-[2.6px] md:pt-0 items-center overflow-hidden whitespace-nowrap cursor-pointer">
                 <span class="md:hidden">{{ name[0] if name else 'Visitante' }}</span>
                 <span class="hidden md:inline">
                     {% if name|length > 2 and name[1].lower() in ['da', 'do', 'das', 'dos', 'de'] %}
@@ -81,13 +59,67 @@
         </div>
     </header>
 
-    <aside id="toast"
-        class="bg-white pl-2 pb-1 duration-400 select-none fixed flex flex-col justify-center rounded-md top-16 -right-1 z-40 h-24 w-80 border-l-5 text-black shadow-2xl transform translate-x-full">
+    <div id="toast"
+        class="bg-white pl-2 pb-1 duration-400 select-none fixed flex flex-col justify-center rounded-md top-16 -right-1 z-40 h-24 w-80 border-l-5 text-black shadow-xl transform translate-x-full">
         <h2 class="font-bold">{{ Status }}</h2>
         <h1 class="text-sm text-gray-600">{{ Message }}</h1>
         <div id="toast-progress" class="absolute bottom-0 left-0 h-1 bg-current w-full"></div>
         <audio src="" id="sound-effect" hidden preload="metadata" type="audio/mp3"></audio>
-    </aside>
+    </div>
+
+    <div id="user-menu"
+        class="fixed top-14 right-0 translate-x-full z-50 w-48 py-2 bg-white rounded-lg shadow-xl border border-gray-600 transform transition-all duration-200">
+
+        <div class="px-4 py-2 border-b border-gray-600">
+            <p class="text-sm font-semibold">
+                {% if name|length > 2 and name[1].lower() in ['da', 'do', 'das', 'dos', 'de'] %}
+                {{ name[:3] | join(' ') }}
+                {% else %}
+                {{ name[:2] | join(' ') if name else 'Visitante' }}
+                {% endif %}
+            </p>
+            <p class="text-xs text-gray-500">Cargo: {{role_name}}</p>
+        </div>
+
+        <div class="py-1">
+            <button onclick="toggleTheme()"
+                class="flex cursor-pointer items-center w-full px-4 py-2 text-sm text-gray-600 hover:bg-gray-300 border-gray-600 transition-colors">
+                <div class="relative w-6 h-6 mr-3 flex items-center justify-center">
+                    <svg id="theme-icon-sun" class="absolute w-5 h-5 transition-all duration-500 transform" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                    <svg id="theme-icon-moon"
+                        class="absolute w-5 h-5 transition-all duration-500 transform scale-0 -rotate-90"
+                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                    </svg>
+                </div>
+                <span>Alternar Tema</span>
+            </button>
+
+            <a href="#"
+                class="flex items-center px-4 py-2 text-sm text-gray-600 hover:bg-gray-300">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                Meu Perfil
+            </a>
+        </div>
+
+        <div class="py-1 border-t border-gray-600">
+            <a href="/logout"
+                class="flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-100">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+                Deslogar
+            </a>
+        </div>
+    </div>
 
     <aside id="sidebar"
         class="overflow-y-auto duration-400 select-none fixed block top-0 left-0 z-50 h-screen w-64 bg-light-default-main text-white shadow-2xl transform border-r-4 -translate-x-full">
@@ -158,24 +190,21 @@
 
     </main>
 
-    <img id="img-preview"
-        class="select-none absolute top-0 left-0 pointer-events-none z-50 opacity-0 max-h-70 bg-white"
+    <img id="img-preview" class="select-none absolute top-0 left-0 pointer-events-none z-50 opacity-0 max-h-70 bg-white"
         src="" alt="Imagem não Encontrada!">
 
     <script>
         {
             // Theme toggle
-            // const applyTheme = (dark) => {
-            //     document.documentElement.classList.toggle('dark', dark);
-            //     document.getElementById('theme-icon-sun').classList.toggle('hidden', !dark);
-            //     document.getElementById('theme-icon-moon').classList.toggle('hidden', dark);
-            // };
+            window.toggleUserMenu = function () {
+                document.getElementById('user-menu').classList.toggle('translate-x-full');
+            }
 
-            // window.toggleTheme = function() {
-            //     const isDark = !document.documentElement.classList.contains('dark');
-            //     applyTheme(isDark);
-            //     localStorage.setItem('theme', isDark ? 'dark' : 'light');
-            // };
+            window.toggleTheme = function () {
+                const isDark = !document.documentElement.classList.contains('dark');
+                applyTheme(isDark);
+                localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            };
 
             // applyTheme(localStorage.getItem('theme') === 'dark');
 

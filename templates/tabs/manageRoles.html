@@ -1,10 +1,10 @@
 <form action="/mails-api/manageRoles" method="post" id="manage_roles_form"
-    class="p-8 bg-white rounded-xl shadow-lg overflow-hidden border-t-4 border-light-default-main row-span-2 w-2xl self-center h-max justify-self-center *:w-full">
+    class="md:p-8 py-8 px-6 bg-white rounded-xl shadow-lg overflow-hidden border-t-4 border-light-default-main row-span-2 md:w-2xl w-5/6 self-center h-max justify-self-center *:w-full">
     <h2 class="text-3xl! font-bold text-center text-light-default-main">Gerenciar Cargos</h2>
 
     <input type="hidden" name="form_action" id="form_action" value="save">
 
-    <div class="mt-4 mb-8 flex items-center justify-center gap-x-3">
+    <div class="flex items-center justify-center gap-x-3">
         <h1 class="font-bold">Criar</h1>
         <label class="relative inline-flex items-center cursor-pointer">
             <input type="checkbox" id="mode_toggle" name="mode" class="sr-only peer">
@@ -15,13 +15,13 @@
         <h1 class="font-bold">Editar</h1>
     </div>
 
-    <div class="flex flex-col gap-y-3 mb-8" id="role_input_container">
+    <div class="my-4 flex flex-col" id="role_input_container">
 
     </div>
 
-    <div class="h-[12vmax] overflow-y-auto border mb-8 border-gray-200 p-3 rounded-md bg-gray-50 flex flex-col">
+    <div class="mb-4 md:h-[12vmax] overflow-y-auto border border-gray-200 p-3 rounded-md bg-gray-50 flex flex-col">
         <label class="block font-semibold text-gray-600 mb-2">Permissões de Abas</label>
-        <div class="grid grid-cols-2 gap-2" id="permissions_container">
+        <div class="grid grid-cols-2" id="permissions_container">
             {% for tab in all_tabs %}
             <label class="flex items-center space-x-2 cursor-pointer">
                 <input type="checkbox" name="tabs" value="{{ tab['id'] }}"

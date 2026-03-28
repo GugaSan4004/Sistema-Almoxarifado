@@ -1,5 +1,5 @@
 <div class="col-span-2 self-center text-3xl! font-bold text-center text-light-default-main">Gerador de Devolução</div>
-<div class="-row-start-2 ml-4 mb-3 relative md:w-80 h-max self-end items-center flex">
+<div class="-row-start-2 ml-4 mb-3 relative md:w-80 w-[45vmin] h-max self-end items-center flex">
     <span class="absolute inset-y-0 left-0 flex items-center pl-3">
         <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -10,11 +10,7 @@
         <input id="csrf-token" type="hidden" value="{{ csrf_token() }}">
         <input id="barcode-input"
             class="block w-full rounded-sm px-10 py-2 border border-gray-300 leading-5 bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-light-default-main focus:border-light-default-main sm:text-sm transition duration-300 ease-in-out"
-            placeholder="Buscar por código AR..." 
-            name="code" 
-            type="search"
-            autocomplete="off"
-            required>
+            placeholder="Buscar por código AR..." name="code" type="search" autocomplete="off" required>
         <button type="submit" hidden></button>
     </form>
 </div>
@@ -22,9 +18,8 @@
 <form class="-row-start-2 mr-4 mb-3 self-end justify-self-end" action="/mails-api/generateReturn" method="post">
     <input type="hidden" id="csrf-token" value="{{ csrf_token() }}">
     <input type="text" hidden id="values" name="values">
-    <button onclick="prepareReturnDocument()"
-        type="submit" {{ '' if mails else 'disabled' }}
-        class="h-9.5 disabled:bg-light-default-main/40 enabled:hover:text-light-default-secondary bg-light-default-main enabled:text-white disabled:text-black cursor-pointer md:w-80 text-center active:scale-95 transition-all rounded-sm">
+    <button onclick="prepareReturnDocument()" type="submit" {{ '' if mails else 'disabled' }}
+        class="h-9.5 font-bold disabled:bg-light-default-main/40 enabled:hover:text-light-default-secondary bg-light-default-main enabled:text-white disabled:text-black cursor-pointer md:w-80 w-[45vmin] text-center active:scale-95 transition-all rounded-sm">
         Gerar Documento
     </button>
 </form>
@@ -47,7 +42,7 @@
         {% set id, name, code, fantasy, type, priority, entryDate, _, _, _, _, _, _, _, _, _, reason = mail %}
 
         <div onclick="removeReturnMail(event, '{{ code }}')"
-            class="*:truncate cursor-pointer *:overflow-hidden *:whitespace-nowrap grid-cols-[1cm_1fr_3.2cm_0.5fr_1.4cm_2cm_2.2cm_3cm] {{ row_class }} duration-300 transition-colors grid gap-2 py-2 pr-2 border-b border-gray-700/50 hover:bg-light-default-main/15 items-center text-xs text-center *:text-ellipsis *:whitespace-nowrap *:overflow-hidden *:truncate">
+            class="*:truncate cursor-pointer min-w-300 *:overflow-hidden *:whitespace-nowrap grid-cols-[1cm_1fr_3.2cm_0.5fr_1.4cm_2cm_2.2cm_3cm] {{ row_class }} duration-300 transition-colors grid gap-2 py-2 pr-2 border-b border-gray-700/50 hover:bg-light-default-main/15 items-center text-xs text-center *:text-ellipsis *:whitespace-nowrap *:overflow-hidden *:truncate">
 
             <span>{{ id }}</span>
             <span class="text-start">{{ name }}</span>

@@ -1,6 +1,6 @@
 {
     window.removeReturnMail = function (event, code) {  
-        if (event.target.tagName == 'DIV') {
+        if (event.target.tagName != 'OPTION' && event.target.tagName != 'SELECT') {
             if (confirm(`Tem certeza que deseja remover ${code} da lista?`)) {
                 delete return_data[code];
                 sendReturnMail();

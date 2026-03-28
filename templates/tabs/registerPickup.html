@@ -1,7 +1,7 @@
 <form action="/mails-api/registerPickup" method="post"
-    class="p-8 bg-white rounded-xl shadow-lg overflow-hidden border-t-4 border-light-default-main row-span-2 w-[40vmax] self-center h-[30vmax] gap-x-3 justify-self-center grid *:w-full *:mb-8">
+    class="md:p-8 py-8 px-6 bg-white rounded-xl shadow-lg overflow-hidden border-t-4 border-light-default-main row-span-2 max-w-xl w-5/6 self-center gap-x-3 justify-self-center grid *:w-full md:gap-8 gap-4">
     <input type="hidden" id="csrf-token" value="{{ csrf_token() }}">
-    <h2 class="text-3xl! mt-8 font-bold text-center text-light-default-main">Registro de Coleta</h2>
+    <h2 class="md:text-3xl! text-[5vmin]! py-3 font-bold text-center text-light-default-main">Registro de Coleta</h2>
 
     <div>
         <label class="block font-semibold text-gray-600 mb-1">Codigo de Rastreio da Correspondencia</label>

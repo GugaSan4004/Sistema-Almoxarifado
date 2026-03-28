@@ -52,7 +52,7 @@ class init:
         img.save(qr_buf)
         qr_buf.seek(0)
 
-        doc = Document(self.path / "static" / "files" / "template.docx")
+        doc = Document(self.path / "static" / "other" / "return_template.docx")
 
         def make_image_floating(run, picture, width_inch, height_inch, x_inch, y_inch):
             """Makes an image floating 'In Front of Text'."""

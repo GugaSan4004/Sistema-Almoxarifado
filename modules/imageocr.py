@@ -69,6 +69,7 @@ class init:
                         names.append(ent.text)
         text = unicodedata.normalize('NFKD', text).encode('ASCII', 'ignore').decode('ASCII')
         return [text, names]
+        # return ["testee", ["Maria 123", "teste 456"]]
 
     def decode_qrcode(self, path):
         try:
@@ -90,4 +91,3 @@ class init:
         except Exception as e:
             print(f"Error decoding QR code: {e}")
             return None
-        # return ["testee", ["Maria 123", "teste 456"]]

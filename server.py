@@ -449,6 +449,7 @@ def mails():
     values = {
         "allowed_tabs": user.get("allowed_tabs"),
         "user_name": user.get("name"),
+        "role_name": user.get("role")
     }
 
     return render_template(
